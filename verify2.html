@@ -14,6 +14,16 @@
     text-align: center;
   }
 
+  h1 {
+    margin-top: 30px;
+  }
+
+  p {
+    max-width: 600px;
+    margin: 10px auto;
+    padding: 0 20px;
+  }
+
   /* Camera circle */
   #camera-circle {
     width: min(80vw, 300px);
@@ -32,6 +42,17 @@
     object-fit: cover;
   }
 
+  button {
+    margin-top: 20px;
+    padding: 14px 28px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+    background: #3498db;
+    color: white;
+  }
+
   /* Loading bar */
   #loader-container {
     width: 80%;
@@ -42,29 +63,18 @@
     border-radius: 10px;
     margin: 30px auto;
     overflow: hidden;
+    display: none;
   }
 
   #loader-bar {
     width: 0%;
     height: 100%;
     background: linear-gradient(90deg, #2ecc71, #27ae60);
-    transition: width 0.1s linear;
   }
 
   #message {
     font-size: 22px;
     margin-top: 20px;
-  }
-
-  button {
-    margin-top: 20px;
-    padding: 12px 24px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 8px;
-    border: none;
-    background: #3498db;
-    color: white;
   }
 </style>
 </head>
@@ -73,17 +83,22 @@
 
 <h1>Verify</h1>
 
-<p>This is AI face Verfication to check your age. Press the button to continue. If you do not press the button, then you will automaticly be denied service.</p>
-<p>If the AI guesses wrong, refresh the page.</p>
+<p>
+  This is AI face verification to check your age.  
+  Press the button to continue. If you do not press the button, you may be denied service.
+</p>
+<p>
+  If the AI guesses wrong, refresh the page.
+</p>
 
 <div id="camera-circle">
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas" hidden></canvas>
 </div>
 
-<button onclick="takePhoto()">Take Photo</button>
+<button id="actionButton" onclick="handleClick()">Start Verification</button>
 
-<div id="loader-container" hidden>
+<div id="loader-container">
   <div id="loader-bar"></div>
 </div>
 
@@ -95,15 +110,31 @@
   const loader = document.getElementById("loader-container");
   const bar = document.getElementById("loader-bar");
   const message = document.getElementById("message");
+  const button = document.getElementById("actionButton");
 
-  // Ask for camera permission
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      video.srcObject = stream;
-    })
-    .catch(() => {
-      alert("Camera access denied.");
-    });
+  let stream = null;
+  let cameraStarted = false;
+
+  function handleClick() {
+    if (!cameraStarted) {
+      requestCamera();
+    } else {
+      takePhoto();
+    }
+  }
+
+  function requestCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(s => {
+        stream = s;
+        video.srcObject = stream;
+        cameraStarted = true;
+        button.textContent = "Take Photo";
+      })
+      .catch(() => {
+        alert("Camera permission is required to continue.");
+      });
+  }
 
   function takePhoto() {
     const ctx = canvas.getContext("2d");
@@ -111,18 +142,23 @@
     canvas.height = video.videoHeight;
 
     ctx.drawImage(video, 0, 0);
+
     video.hidden = true;
     canvas.hidden = false;
 
+    // Stop camera after capture
+    stream.getTracks().forEach(track => track.stop());
+
+    button.disabled = true;
     startLoading();
   }
 
   function startLoading() {
-    loader.hidden = false;
+    loader.style.display = "block";
     let progress = 0;
 
     const interval = setInterval(() => {
-      progress += 1;
+      progress++;
       bar.style.width = progress + "%";
 
       if (progress >= 100) {
@@ -134,11 +170,12 @@
 
   function showMessage() {
     const texts = [
-      "AI guessed age 15-16. You are too young to use this AI.",
-      "AI guessed age 65+. Please use a different AI, you are too old."
+      "AI guessed age is: 15-16. Please use a different AI, you are too young to use ChatGPT.",
+      "AI gussed age is: 65+. Please use a different AI, you are too old to use ChatGPT."
     ];
 
-    message.textContent = texts[Math.floor(Math.random() * texts.length)];
+    message.textContent =
+      texts[Math.floor(Math.random() * texts.length)];
   }
 </script>
 
