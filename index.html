@@ -2,10 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Website</title>
+  <title>Font & Button Demo</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Playfair+Display&family=Montserrat&family=Courier+Prime&family=Pacifico&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+
+    .text1 { font-family: 'Roboto', sans-serif; font-size: 24px; }
+    .text2 { font-family: 'Playfair Display', serif; font-size: 26px; }
+    .text3 { font-family: 'Montserrat', sans-serif; font-size: 22px; }
+    .text4 { font-family: 'Courier Prime', monospace; font-size: 20px; }
+    .text5 { font-family: 'Pacifico', cursive; font-size: 28px; }
+
+    .buttons {
+      margin-top: 40px;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      margin: 10px;
+      color: white;
+    }
+
+    .btn-small {
+      font-size: 14px;
+      padding: 8px 14px;
+      background: #3498db;
+    }
+
+    .btn-medium {
+      font-size: 18px;
+      padding: 12px 20px;
+      background: #2ecc71;
+    }
+
+    .btn-large {
+      font-size: 22px;
+      padding: 16px 30px;
+      background: #e74c3c;
+    }
+
+    .btn-xl {
+      font-size: 26px;
+      padding: 20px 40px;
+      background: #9b59b6;
+    }
+  </style>
 </head>
 <body>
-  <h1>It works 🎉</h1>
-  <p>Your GitHub Pages site is alive.</p>
+
+  <h1>Text Examples</h1>
+
+  <p class="text1">This is Roboto (clean & modern)</p>
+  <p class="text2">This is Playfair Display (elegant serif)</p>
+  <p class="text3">This is Montserrat (UI-friendly)</p>
+  <p class="text4">This is Courier Prime (monospace)</p>
+  <p class="text5">This is Pacifico (handwritten style)</p>
+
+  <div class="buttons">
+    <h2>Button Examples</h2>
+
+    <button class="btn btn-small">Small Button</button>
+    <button class="btn btn-medium">Medium Button</button>
+    <button class="btn btn-large">Large Button</button>
+    <button class="btn btn-xl">Extra Large Button</button>
+  </div>
+
 </body>
 </html>
