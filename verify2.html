@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verify</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: 'Montserrat', sans-serif;
+      padding: 40px;
+    }
+
+    .text3 {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    /* ===== LOADING BAR ===== */
+    #loader-container {
+      width: 300px;
+      height: 20px;
+      background: #222;
+      border: 2px solid #555;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #loader-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2ecc71, #27ae60);
+      transition: width 0.1s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Verify</h1>
+
+  <p class="text3">Loading...</p>
+
+  <div id="loader-container">
+    <div id="loader-bar"></div>
+  </div>
+
+  <script>
+    let progress = 0;
+    const bar = document.getElementById("loader-bar");
+
+    const interval = setInterval(() => {
+      progress += 1;
+      bar.style.width = progress + "%";
+
+      if (progress >= 100) {
+        clearInterval(interval);
+      }
+    }, 30);
+  </script>
+
+</body>
+</html>
