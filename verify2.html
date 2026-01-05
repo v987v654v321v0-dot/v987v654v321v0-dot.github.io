@@ -1,56 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Verify</title>
+<meta charset="UTF-8">
+<title>Verify</title>
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
 
-  <style>
-    body {
-      background: #111;
-      color: #eee;
-      font-family: 'Montserrat', sans-serif;
-      padding: 40px;
-    }
+  /* Camera circle */
+  #camera-circle {
+    width: min(80vw, 300px);
+    height: min(80vw, 300px);
+    border-radius: 50%;
+    border: 4px solid #555;
+    overflow: hidden;
+    margin: 40px auto 20px;
+    background: #000;
+    position: relative;
+  }
 
-    .text3 {
-      font-size: 22px;
-      margin-bottom: 20px;
-    }
+  video, canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-    /* ===== LOADING BAR ===== */
-    #loader-container {
-      width: 300px;
-      height: 20px;
-      background: #222;
-      border: 2px solid #555;
-      border-radius: 10px;
-      overflow: hidden;
-    }
+  /* Loading bar */
+  #loader-container {
+    width: 80%;
+    max-width: 400px;
+    height: 20px;
+    background: #222;
+    border: 2px solid #555;
+    border-radius: 10px;
+    margin: 30px auto;
+    overflow: hidden;
+  }
 
-    #loader-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #2ecc71, #27ae60);
-      transition: width 0.1s linear;
-    }
-  </style>
+  #loader-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    transition: width 0.1s linear;
+  }
+
+  #message {
+    font-size: 22px;
+    margin-top: 20px;
+  }
+
+  button {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+    background: #3498db;
+    color: white;
+  }
+</style>
 </head>
+
 <body>
 
-  <h1>Verify</h1>
+<h1>Verify</h1>
 
-  <p class="text3">Loading...</p>
+<div id="camera-circle">
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" hidden></canvas>
+</div>
 
-  <div id="loader-container">
-    <div id="loader-bar"></div>
-  </div>
+<button onclick="takePhoto()">Take Photo</button>
 
-  <script>
+<div id="loader-container" hidden>
+  <div id="loader-bar"></div>
+</div>
+
+<div id="message"></div>
+
+<script>
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const loader = document.getElementById("loader-container");
+  const bar = document.getElementById("loader-bar");
+  const message = document.getElementById("message");
+
+  // Ask for camera permission
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(() => {
+      alert("Camera access denied.");
+    });
+
+  function takePhoto() {
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(video, 0, 0);
+    video.hidden = true;
+    canvas.hidden = false;
+
+    startLoading();
+  }
+
+  function startLoading() {
+    loader.hidden = false;
     let progress = 0;
-    const bar = document.getElementById("loader-bar");
 
     const interval = setInterval(() => {
       progress += 1;
@@ -58,9 +124,20 @@
 
       if (progress >= 100) {
         clearInterval(interval);
+        showMessage();
       }
-    }, 30);
-  </script>
+    }, 100); // 100ms × 100 = 10 seconds
+  }
+
+  function showMessage() {
+    const texts = [
+      "Thats what u look like?",
+      "Thats what u look like!"
+    ];
+
+    message.textContent = texts[Math.floor(Math.random() * texts.length)];
+  }
+</script>
 
 </body>
 </html>
