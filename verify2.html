@@ -73,6 +73,9 @@
 
 <h1>Verify</h1>
 
+<p>This is AI face Verfication to check your age. Press the button to continue. If you do not press the button, then you will automaticly be denied service.</p>
+<p>If the AI guesses wrong, refresh the page.</p>
+
 <div id="camera-circle">
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas" hidden></canvas>
@@ -131,8 +134,8 @@
 
   function showMessage() {
     const texts = [
-      "Thats what u look like?",
-      "Thats what u look like!"
+      "AI guessed age 15-16. You are too young to use this AI.",
+      "AI guessed age 65+. Please use a different AI, you are too old."
     ];
 
     message.textContent = texts[Math.floor(Math.random() * texts.length)];
