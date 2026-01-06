@@ -124,6 +124,35 @@
   background: linear-gradient(90deg, #4c6cff, #2ecc71);
   transition: width 0.6s ease;
 }
+
+    .account-circle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #4c6cff;
+  color: white;
+  text-decoration: none;
+
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+
+  border-radius: 50%;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+  z-index: 2000;
+}
+
+.account-circle:hover {
+  background: #3a56d4;
+}
   </style>
 </head>
 
@@ -135,6 +164,9 @@
   </header>
 
   <main class="main-content">
+
+    <a href="account.html" class="account-circle">Account</a>
+    
     <div class="card">
       <h2>News Letter #1</h2>
       <p>
