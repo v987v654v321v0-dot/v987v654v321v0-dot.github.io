@@ -95,6 +95,35 @@
       font-size: 13px;
       opacity: 0.6;
     }
+
+    .meter-box {
+  margin-top: 20px;
+}
+
+.meter-box input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: none;
+  font-family: inherit;
+}
+
+.meter {
+  width: 100%;
+  height: 14px;
+  background: #2a2f55;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4c6cff, #2ecc71);
+  transition: width 0.6s ease;
+}
   </style>
 </head>
 
@@ -164,6 +193,43 @@
     });
   });
 </script>
+
+      <div class="card">
+      <h2>News Letter #3</h2>
+      <p>
+        Hot tea is spilling. During the recent seat change, alot of talkative people were grouped up in a tight space. 
+      </p>
+      <p>
+        This allows alot of drama to spread across the classroom. Including, ships, crushes, and more.
+      </p>
+      <p>
+        Personally, I really dont know what to say. You can find out the love meter by entering one name and another for a output. Test it below.
+      </p>
+
+      <div class="meter-box">
+      <input type="text" placeholder="Input 1">
+      <input type="text" placeholder="Input 2">
+
+      <button class="button" onclick="generatePercent()">Check</button>
+
+      <div class="meter">
+        <div class="meter-fill" id="meterFill"></div>
+      </div>
+
+      <p id="percentText">The percent is: 0%</p>
+
+      <script>
+  function generatePercent() {
+    const percent = Math.floor(Math.random() * 101); // 0–100
+
+    document.getElementById("meterFill").style.width = percent + "%";
+    document.getElementById("percentText").textContent =
+      "The percent is: " + percent + "%";
+  }
+</script>
+</div>
+
+        
     </div>
   </main>
 
