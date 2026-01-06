@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>News Docs</title>
+
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Reset / Base ---------- */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: #0f1220;
+      color: #eaeaf0;
+      line-height: 1.6;
+    }
+
+    /* ---------- Header ---------- */
+    .header {
+      padding: 48px 20px 24px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 15px;
+      opacity: 0.7;
+    }
+
+    /* ---------- Main ---------- */
+    .main-content {
+      display: flex;
+      justify-content: center;
+      padding: 24px 20px 80px;
+    }
+
+    .card {
+      background: #181c33;
+      max-width: 480px;
+      padding: 32px;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+    }
+
+    .card p {
+      font-size: 15px;
+      opacity: 0.9;
+      margin-bottom: 16px;
+    }
+
+    /* ---------- Button ---------- */
+    .button {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 10px 18px;
+      background: #4c6cff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .button:hover {
+      background: #3a56d4;
+    }
+
+    /* ---------- Footer ---------- */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <h1>Account Settings</h1>
+    <p class="subtitle"></p>
+  </header>
+
+  <main class="main-content">
+    <div class="card">
+      <h2>Since our datastores cannot store account data at the moment due to low funds, we will store a different way.</h2>
+      <p>
+        Remember, if you switch browsers you might lose some of your data, but your account will always be there.
+      </p>
+      
+    </div>
+  </main>
+
+  <footer class="footer">
+    © 2026 My Website
+  </footer>
+
+</body>
+</html>
