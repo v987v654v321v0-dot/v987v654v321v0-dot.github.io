@@ -141,20 +141,26 @@
       <p>
         and the rumor is true? Well, thats crazy! Personally, I may... or so... maybe... have a crush. You will never know!
       </p>
-      <a href="#" class="button" id="crushBtn">Click me if you have a crush</a>
 
-      <script>
-     const btn = document.getElementById("crushBtn");
-  let liked = false;
+      <a href="#" class="button" id="blockOfCheeseBtn">
+  Click me if you have a crush
+</a>
 
-  btn.addEventListener("click", function (e) {
-    e.preventDefault(); // stop link jump
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("blockOfCheeseBtn");
 
-    liked = !liked;
+    let hasCheese = false;
 
-    btn.textContent = liked
-      ? "You have a crush ✓"
-      : "Click me if you have a crush";
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      hasCheese = !hasCheese;
+
+      btn.textContent = hasCheese
+        ? "You have a valid crush ✓"
+        : "Click me if you have a crush";
+    });
   });
 </script>
     </div>
