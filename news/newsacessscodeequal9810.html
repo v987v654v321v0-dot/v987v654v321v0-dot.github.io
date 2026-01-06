@@ -4,28 +4,114 @@
   <meta charset="UTF-8">
   <title>My Page</title>
 
-  <!-- Good modern font -->
+  <!-- Montserrat font -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="style.css">
 
-  
+  <style>
+    /* ---------- Base ---------- */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+      background: #0f1220;
+      color: #eaeaf0;
+      line-height: 1.6;
+    }
+
+    /* ---------- Header ---------- */
+    .header {
+      padding: 40px 20px 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0.7;
+    }
+
+    /* ---------- Main ---------- */
+    .main-content {
+      display: flex;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+
+    .card {
+      background: #181c33;
+      padding: 28px;
+      border-radius: 12px;
+      max-width: 420px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+    }
+
+    .card p {
+      font-size: 15px;
+      font-weight: 400;
+      opacity: 0.9;
+      margin-bottom: 14px;
+    }
+
+    /* ---------- Button ---------- */
+    .button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 18px;
+      background: #4c6cff;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .button:hover {
+      background: #3a56d4;
+    }
+
+    /* ---------- Footer ---------- */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      opacity: 0.6;
+    }
+  </style>
 </head>
+
 <body>
 
   <header class="header">
     <h1>Daily news</h1>
-    <p class="subtitle">Please read below on how to get a key.</p>
+    <p class="subtitle">We offer the best news straight up!</p>
   </header>
 
   <main class="main-content">
     <div class="card">
-      <h2>How to get a Key</h2>
+      <h2>News Letter #1</h2>
       <p>
-       You can receive a key if you are chosen by the website owner. The website owner will then add your username and key to the sites datastore.
+        Welcome to the first newsletter! Note, you can buy a ad for the cheap price of 1 dollar.
       </p>
       <p>
-        Once you enter your assigned username and key, you will get into the site and freely explore classroom news. You can also publish your own classroom news!
+        Remember, if you are exploring classroom news and need to turn it off, you can use the ALERT button to quickly close it.
       </p>
       <a href="#" class="button">Action</a>
     </div>
