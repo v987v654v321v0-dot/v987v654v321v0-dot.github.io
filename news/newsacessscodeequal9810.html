@@ -153,11 +153,33 @@
 .account-circle:hover {
   background: #3a56d4;
 }
-.logout-btn {
+.bottom-bar {
   position: fixed;
-  bottom: 16px;
-  left: 16px;
-  z-index: 2000;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* ← LEFT */
+
+  padding-left: 16px;          /* spacing from edge */
+
+  background: rgba(24, 28, 51, 0.95);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+}
+
+.help-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+
+  background: #4c6cff;
+  border-radius: 6px;
 }
   </style>
 </head>
@@ -280,7 +302,9 @@
   </header>
   </main>
 
-  <a href="main.html" class="button logout-btn">ALERT (logout)</a>
+ <div class="bottom-bar">
+  <a href="main.html" class="help-btn">ALERT (logout)</a>
+</div>
 
   <footer class="footer">
     © 2026 My Website
