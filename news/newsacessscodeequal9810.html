@@ -113,7 +113,50 @@
       <p>
         Remember, if you are exploring classroom news and need to turn it off, you can use the ALERT button to quickly close it.
       </p>
-      <a href="#" class="button">Action</a>
+      <a href="#" class="button" id="likeBtn">I like this news!</a>
+      <script>
+     const btn = document.getElementById("likeBtn");
+  let liked = false;
+
+  btn.addEventListener("click", function (e) {
+    e.preventDefault(); // stop link jump
+
+    liked = !liked;
+
+    btn.textContent = liked
+      ? "You liked this news ✓"
+      : "I like this news!";
+  });
+</script>
+    </div>
+
+    <div class="card">
+      <h2>News Letter #2</h2>
+      <p>
+        So many crushes! There has been a rumor that certain people have a crush on eachother in the classroom.
+      </p>
+      <p>
+        Rumors are almost never true. You mostly do not need to believe them. Or cause them. However, if there is a rumor about you,
+      </p>
+      <p>
+        and the rumor is true? Well, thats crazy! Personally, I may... or so... maybe... have a crush. You will never know!
+      </p>
+      <a href="#" class="button" id="crushBtn">Click me if you have a crush</a>
+
+      <script>
+     const btn = document.getElementById("crushBtn");
+  let liked = false;
+
+  btn.addEventListener("click", function (e) {
+    e.preventDefault(); // stop link jump
+
+    liked = !liked;
+
+    btn.textContent = liked
+      ? "You have a crush ✓"
+      : "Click me if you have a crush";
+  });
+</script>
     </div>
   </main>
 
