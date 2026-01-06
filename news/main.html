@@ -79,6 +79,36 @@
       background: transparent; /* or add a color */
       z-index: 1000;           /* stays above everything */
     }
+    .bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(24, 28, 51, 0.95);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+}
+
+.help-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+
+  background: #4c6cff;
+  border-radius: 6px;
+}
+
+.help-btn:hover {
+  background: #3a56d4;
+}
   </style>
 </head>
 <body>
