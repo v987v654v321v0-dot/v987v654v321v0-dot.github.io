@@ -42,10 +42,10 @@
 
     /* ---------- Main ---------- */
     .main-content {
-      display: flex;
-      justify-content: center;
       padding: 24px 20px 80px;
-    }
+      max-width: 800px;
+      margin: 0 auto;
+    }  
 
     .card {
       background: #181c33;
@@ -111,6 +111,18 @@
       
     
   </main>
+
+  <p>Logged in as <strong id="usernameText"></strong></p>
+
+  <script>
+  const username = localStorage.getItem("username");
+
+  if (username) {
+    document.getElementById("usernameText").textContent = username;
+  } else {
+    document.getElementById("usernameText").textContent = "No Login... you are on the blacklist.";
+  }
+</script>
 
   <footer class="footer">
     © 2026 My Website
