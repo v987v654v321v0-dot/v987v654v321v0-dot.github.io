@@ -130,37 +130,33 @@
   </div>
 
   <script>
-   
-      
-      
-    const BIN_ID = "69604d48ae596e708fcec533";
+  // 🔁 Replace JSONBin with npoint
+  const NPOINT_URL = "https://api.npoint.io/YOUR_NPOINT_ID";
 
-    async function login() {
-  const user = document.getElementById("username").value;
-  const key  = document.getElementById("password").value;
-  const error = document.getElementById("error");
+  async function login() {
+    const user = document.getElementById("username").value;
+    const key  = document.getElementById("password").value;
+    const error = document.getElementById("error");
 
-  try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`);
-    const data = await res.json();
+    try {
+      const res = await fetch(NPOINT_URL);
+      const data = await res.json();
 
-    const users = data.record.users;
+      const users = data.users;
 
-    // ✅ THIS replaces "idk what to put here"
-    if (users[user] && users[user] === key) {
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("username", user);
-      window.location.href = "newsacessscodeequal9810.html";
-    } else {
-      error.textContent =
-        "Invalid username or password. If you dont have a valid key, learn by clicking the Help button at the bottom.";
+      if (users[user] && users[user] === key) {
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("username", user);
+        window.location.href = "newsacessscodeequal9810.html";
+      } else {
+        error.textContent =
+          "Invalid username or password. If you dont have a valid key, learn by clicking the Help button at the bottom.";
+      }
+    } catch (e) {
+      error.textContent = "Login failed. Try again later.";
+      console.error(e);
     }
-  } catch (e) {
-    error.textContent = "Login failed. Try again later.";
-    console.error(e);
   }
-}
-
 </script>
 
 </body>
