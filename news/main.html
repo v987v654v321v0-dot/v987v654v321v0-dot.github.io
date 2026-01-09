@@ -130,23 +130,38 @@
   </div>
 
   <script>
-    function login() {
-      const user = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
-      const error = document.getElementById("error");
-
-      // DEMO credentials
-      if ((user === "Devansha" && pass === "shrekslay") || (user === "anonymous12" && pass === "sushi99") || (user === "robot_racecar" && pass === "Erm_What_The_Sigma") || (user === "Saad9/11" && pass === "MIchaelJacksonishot")) {
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("username", user);
-        window.location.href = "newsacessscodeequal9810.html";
-      } else {
-        error.textContent = "Invalid username or password. If you dont have a valid key, learn by clicking the Help button at the bottom.";
-      }
-
+   
       
+      
+    const BIN_ID = "69604d48ae596e708fcec533";
+
+    async function login() {
+  const user = document.getElementById("user").value;
+  const key  = document.getElementById("key").value;
+  const error = document.getElementById("error");
+
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`);
+    const data = await res.json();
+
+    const users = data.record.users;
+
+    // ✅ THIS replaces "idk what to put here"
+    if (users[user] && users[user] === key) {
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("username", user);
+      window.location.href = "newsacessscodeequal9810.html";
+    } else {
+      error.textContent =
+        "Invalid username or password. If you dont have a valid key, learn by clicking the Help button at the bottom.";
     }
-  </script>
+  } catch (e) {
+    error.textContent = "Login failed. Try again later.";
+    console.error(e);
+  }
+}
+
+</script>
 
 </body>
 </html>
