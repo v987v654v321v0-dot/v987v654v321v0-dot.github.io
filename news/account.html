@@ -189,9 +189,9 @@
   const adminBtn = document.getElementById("adminBtn");
 
   const loggedIn = localStorage.getItem("loggedIn");
-  const username = localStorage.getItem("username");
+  const username2 = localStorage.getItem("username");
 
-  if (loggedIn === "true" && username === "admin-account") {
+  if (loggedIn === "true" && username2 === "admin-account") {
     adminBtn.style.display = "block";
 
     adminBtn.onclick = () => {
