@@ -181,6 +181,25 @@
   }
 </script>
 
+    <button id="adminBtn" class="button danger" style="display:none;">
+      Admin Panel
+  </button>
+
+    <script>
+  const adminBtn = document.getElementById("adminBtn");
+
+  const loggedIn = localStorage.getItem("loggedIn");
+  const username = localStorage.getItem("username");
+
+  if (loggedIn === "true" && username === "admin-account") {
+    adminBtn.style.display = "block";
+
+    adminBtn.onclick = () => {
+      window.location.href = "adminpanel.html";
+    };
+  }
+</script>
+
   </main>
 
   
