@@ -211,12 +211,15 @@
     <div class="card">
       <h2>News Letter #1</h2>
       <p>
-        Welcome to the first newsletter! Note, you can buy a ad for the cheap price of 1 dollar.
+        A new discord group named: "The Biblographys" currently have 10 memebers. There are friend chats, slight drama and tea, but not very intense.
       </p>
       <p>
-        Remember, if you are exploring classroom news and need to turn it off, you can use the ALERT button to quickly close it.
+        However, some people have reported being left out. I am in the group, but others are saying so.
       </p>
-      <a href="#" class="button" id="likeBtn">I like this news!</a>
+      <p>
+        Many "tea" chats on discord have also popped up! These chats discuss drama in the classroom.
+      </p>
+      <a href="#" class="button" id="likeBtn">I am in the Bibliographys group!</a>
       <script>
      const btn = document.getElementById("likeBtn");
   let liked = false;
@@ -227,8 +230,8 @@
     liked = !liked;
 
     btn.textContent = liked
-      ? "You liked this news ✓"
-      : "I like this news!";
+      ? "You are in the Bibliographys group! ✓"
+      : "I am in the Bibliographys group!";
   });
 </script>
     </div>
@@ -236,17 +239,17 @@
     <div class="card">
       <h2>News Letter #2</h2>
       <p>
-        So many crushes! There has been a rumor that certain people have a crush on eachother in the classroom.
+        The old way to get a key and pass is once the website owner gets home. Now we decided to use a more secure and easier way.
       </p>
       <p>
-        Rumors are almost never true. You mostly do not need to believe them. Or cause them. However, if there is a rumor about you,
+        Now with a secure admin account, I, the website owner, can make new accounts for people without website acesss.
       </p>
       <p>
-        and the rumor is true? Well, thats crazy! Personally, I may... or so... maybe... have a crush. You will never know!
+        We also added a new way to publish news through a forum system. You can acess it in account settings.
       </p>
 
       <a href="#" class="button" id="blockOfCheeseBtn">
-  Click me if you have a crush
+  Click me if you want to make some news
 </a>
 
 <script>
@@ -261,8 +264,8 @@
       hasCheese = !hasCheese;
 
       btn.textContent = hasCheese
-        ? "You have a valid crush ✓"
-        : "Click me if you have a crush";
+        ? "You have a valid decision ✓"
+        : "Click me if you want to make some news";
     });
   });
 </script>
@@ -273,13 +276,10 @@
   <div class="card">
       <h2>News Letter #3</h2>
       <p>
-        Hot tea is spilling. During the recent seat change, alot of talkative people were grouped up in a tight space. 
+        Yesterday, the love meter really was popular. So today, we will do it again.
       </p>
       <p>
-        This allows alot of drama to spread across the classroom. Including, ships, crushes, and more.
-      </p>
-      <p>
-        Personally, I really dont know what to say. You can find out the love meter by entering one name and another for a output. Test it below.
+        Try it below! Also, if you get a ultra precent, it means TRUE LOVE.
       </p>
 
       <div class="meter-box">
@@ -295,13 +295,19 @@
       <p id="percentText">The love percent is: 0%</p>
 
       <script>
-  function generatePercent() {
-    const percent = Math.floor(Math.random() * 101); // 0–100
+ function generatePercent() {
+  const percent = Math.floor(Math.random() * 121); // 0–120
 
-    document.getElementById("meterFill").style.width = percent + "%";
+  document.getElementById("meterFill").style.width = percent + "%";
+
+  if (percent === 120) {
+    document.getElementById("percentText").textContent =
+      "The percent is: TRUE LOVE ❤️";
+  } else {
     document.getElementById("percentText").textContent =
       "The percent is: " + percent + "%";
   }
+}
 
 </script>
     
