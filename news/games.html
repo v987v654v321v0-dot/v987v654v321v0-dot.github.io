@@ -91,6 +91,19 @@
 
 <body>
 
+  <script>
+  const username = localStorage.getItem("username");
+
+  if (username) {
+    console.log("verfied....")
+  } else {
+
+    window.location.href = "main.html";
+    
+    
+  }
+</script>
+
   <div class="app">
     <h1>Game Hub</h1>
     <p>Press the button below to launch Tag without leaving this page.</p>
