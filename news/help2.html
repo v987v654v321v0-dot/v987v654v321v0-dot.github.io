@@ -9,6 +9,19 @@
 </head>
 <body>
 
+  <script>
+  const username = localStorage.getItem("username");
+
+  if (username) {
+    console.log("verfied....")
+  } else {
+
+    window.location.href = "main.html";
+    
+    
+  }
+</script>
+
   <header class="header">
     <h1>News Docs</h1>
     <p>Please read below on how to make a ad.</p>
