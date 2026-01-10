@@ -30,12 +30,80 @@
     </div>
     <p>                 </p>
     <p>                 </p>
+    <div class="card">
+  <h2>Create an Ad</h2>
+
+  <!-- Date input -->
+  <label for="ad-date">Ad Date (Weekdays only)</label>
+  <input type="date" id="ad-date">
+
+  <!-- Ad text -->
+  <label for="ad-text">Ad Text</label>
+  <textarea
+    id="ad-text"
+    rows="4"
+    placeholder="Enter your ad text here..."
+  ></textarea>
+
+  <!-- Color picker -->
+  <label for="ad-color">Text Color</label>
+  <input type="color" id="ad-color" value="#000000">
+
+  <!-- Price display -->
+  <p class="price">Price for ad: <strong>$1</strong></p>
+
+  <!-- Error message -->
+  <div id="ad-error" class="error"></div>
+
+  <!-- Create button -->
+  <button class="button" onclick="createAd()">Create</button>
+</div>
      
   </main>
 
   <footer class="footer">
     © 2026 My Website
   </footer>
+
+  <script>
+  function createAd() {
+    const dateInput = document.getElementById("ad-date").value;
+    const text = document.getElementById("ad-text").value.trim();
+    const color = document.getElementById("ad-color").value;
+    const error = document.getElementById("ad-error");
+
+    error.textContent = "";
+
+    if (!dateInput) {
+      error.textContent = "Please select a date.";
+      return;
+    }
+
+    const selectedDate = new Date(dateInput);
+    const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+
+    if (day === 0 || day === 6) {
+      error.textContent = "Weekends are not allowed. Choose a workday.";
+      return;
+    }
+
+    if (!text) {
+      error.textContent = "Ad text cannot be empty.";
+      return;
+    }
+
+    // Preview or store data
+    alert(
+      "Ad created!\n\n" +
+      "Date: " + dateInput + "\n" +
+      "Text: " + text + "\n" +
+      "Color: " + color + "\n" +
+      "Price: $1"
+    );
+
+    // Later: send to API / datastore / payment flow
+  }
+</script>
 
 </body>
 </html>
