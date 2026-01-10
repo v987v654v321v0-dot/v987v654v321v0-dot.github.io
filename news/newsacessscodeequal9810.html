@@ -43,11 +43,12 @@
 
     /* ---------- Main ---------- */
     .main-content {
-      display: flex;
-      justify-content: center;
-      padding: 30px 20px;
-      gap: 24px;   /* ← space BETWEEN cards */
-    }
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 30px 20px;
+  justify-content: center;
+}
 
     .card {
       background: #181c33;
@@ -209,17 +210,17 @@
     <a href="account.html" class="account-circle">Account</a>
     
     <div class="card">
-      <h2>News Letter #1</h2>
+      <h2>Backtalking</h2>
       <p>
-        A new discord group named: "The Biblographys" currently have 10 memebers. There are friend chats, slight drama and tea, but not very intense.
+        Sara's friend group is sercetly backtalking on Sara, saying bad things about her.
       </p>
       <p>
-        However, some people have reported being left out. I am in the group, but others are saying so.
+        Sara doesnt realise how much gossip is spreading, espescially the type of gossip that ruins friendships.
       </p>
       <p>
-        Many "tea" chats on discord have also popped up! These chats discuss drama in the classroom.
+        Gossip is personally bad. Especially stalking.
       </p>
-      <a href="#" class="button" id="likeBtn">I am in the Bibliographys group!</a>
+      <a href="#" class="button" id="likeBtn">I hate backtalking!</a>
       <script>
      const btn = document.getElementById("likeBtn");
   let liked = false;
@@ -230,26 +231,29 @@
     liked = !liked;
 
     btn.textContent = liked
-      ? "You are in the Bibliographys group! ✓"
-      : "I am in the Bibliographys group!";
+      ? "Very valid. ✓"
+      : "I hate backtalking!";
   });
 </script>
     </div>
 
     <div class="card">
-      <h2>News Letter #2</h2>
+      <h2>Stalking</h2>
       <p>
-        The old way to get a key and pass is once the website owner gets home. Now we decided to use a more secure and easier way.
+        Osama is keeping a binder on everyone, which includes license plates, pictures, a rating, and a title.
       </p>
       <p>
-        Now with a secure admin account, I, the website owner, can make new accounts for people without website acesss.
+        Legally, this is stalking. People can take legal action. This is indetified as: "Harrasment"
       </p>
       <p>
-        We also added a new way to publish news through a forum system. You can acess it in account settings.
+        She is partnering with Sara, Bishesh and some more people.
+      </p>
+      <p>
+        However, a group has told on Osama of what she did. She will get punished I assume.
       </p>
 
       <a href="#" class="button" id="blockOfCheeseBtn">
-  Click me if you want to make some news
+  Click me if you dont like stalking
 </a>
 
 <script>
@@ -264,8 +268,8 @@
       hasCheese = !hasCheese;
 
       btn.textContent = hasCheese
-        ? "You have a valid decision ✓"
-        : "Click me if you want to make some news";
+        ? "You have a valid opinion ✓"
+        : "Click me if you dont like stalking";
     });
   });
 </script>
@@ -274,17 +278,20 @@
 </div>
 
   <div class="card">
-      <h2>News Letter #3</h2>
+      <h2>Strike System</h2>
       <p>
-        Yesterday, the love meter really was popular. So today, we will do it again.
+        There is a strike system in Room 4, describing how you get strikes for doing bad stuff.
       </p>
       <p>
-        Try it below! Also, if you get a ultra precent, it means TRUE LOVE.
+        However, the teacher has decided that people who dont get strikes will be rewarded indoor recesses, the ablity to start clubs, etc.
+      </p>
+      <p>
+        On the other hand, most people in the class have atleast 1 strike. Some do not. The machine below will guess how many strikes you will have next week.
       </p>
 
       <div class="meter-box">
-      <input type="text" placeholder="Input 1">
-      <input type="text" placeholder="Input 2">
+      <input type="text" placeholder="Name">
+     
 
       <button class="button" onclick="generatePercent()">Check</button>
 
@@ -292,26 +299,66 @@
         <div class="meter-fill" id="meterFill"></div>
       </div>
 
-      <p id="percentText">The love percent is: 0%</p>
+      <p id="percentText">The amount of strikes you will have is: </p>
 
       <script>
  function generatePercent() {
-  const percent = Math.floor(Math.random() * 121); // 0–120
+  const percent = Math.floor(Math.random() * 30); // 0–120
 
-  document.getElementById("meterFill").style.width = percent + "%";
+  document.getElementById("meterFill").style.width = percent + " strikes.";
 
-  if (percent === 120) {
+  if (percent === 0) {
     document.getElementById("percentText").textContent =
-      "The percent is: TRUE LOVE ❤️";
+      "Lucky one! You will get 0 strikes.";
   } else {
     document.getElementById("percentText").textContent =
-      "The percent is: " + percent + "%";
+      "The amount of strikes you will get is: " + percent;
   }
 }
 
 </script>
     
     </div>
+
+  <div class="card">
+      <h2>Updates & Ads</h2>
+      <p>
+        To setup an ad here, you can scroll down and click the AD manager button. It costs $1 for an ad.
+      </p>
+      <p>
+        Update log: There are new gui, login page, and updated datastore systems.
+      </p>
+      <p>
+        On sunday, Jan 17, 5:00 PM, or earlier, a DMing update will be released.
+      </p>
+      <p>
+        This will allow chats between 2 people on the website.
+      </p>
+
+      <a href="#" class="button" id="blockOfCheeseBtn">
+  Click me if you like the update
+</a>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("blockOfCheeseBtn");
+
+    let hasCheese = false;
+
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      hasCheese = !hasCheese;
+
+      btn.textContent = hasCheese
+        ? "You have a valid opinion ✓"
+        : "Click me if you like the update";
+    });
+  });
+</script>
+
+      
+</div>
 
   
 
