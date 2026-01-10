@@ -17,6 +17,33 @@ body {
   line-height: 1.6;
 }
 
+label {
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.price {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.error {
+  color: #dc2626;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
 /* =========================
    HEADER
 ========================= */
