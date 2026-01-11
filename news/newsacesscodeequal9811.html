@@ -286,15 +286,15 @@ Requirements:
 </div>
 
   <div class="card">
-      <h2>Strike System</h2>
+      <h2>Soulmate & Love</h2>
       <p>
-        There is a strike system in Room 4, describing how you get strikes for doing bad stuff.
+        Of course, not alot of crushes are in the classroom.
       </p>
       <p>
-        However, the teacher has decided that people who dont get strikes will be rewarded indoor recesses, the ablity to start clubs, etc.
+        However, if you roll the random number geneator below, you will get the number that is the age you will find your soulmate.
       </p>
       <p>
-        On the other hand, most people in the class have atleast 1 strike. Some do not. The machine below will guess how many strikes you will have next week.
+       
       </p>
 
       <div class="meter-box">
@@ -307,20 +307,20 @@ Requirements:
         <div class="meter-fill" id="meterFill"></div>
       </div>
 
-      <p id="percentText">The amount of strikes you will have is: </p>
+      <p id="percentText">The day of true love is: </p>
 
       <script>
  function generatePercent() {
-  const percent = Math.floor(Math.random() * 30); // 0–120
+  const percent = Math.floor(Math.random() * 91); // 0–120
 
   document.getElementById("meterFill").style.width = percent + " strikes.";
 
   if (percent === 0) {
     document.getElementById("percentText").textContent =
-      "Lucky one! You will get 0 strikes.";
+      "At... age 0?";
   } else {
     document.getElementById("percentText").textContent =
-      "The amount of strikes you will get is: " + percent;
+      "The day of true love is: " + percent;
   }
 }
 
