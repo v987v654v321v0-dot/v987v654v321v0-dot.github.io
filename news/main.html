@@ -21,7 +21,6 @@
       align-items: center;
     }
 
-    /* Center everything as ONE unit */
     .auth-wrapper {
       display: flex;
       flex-direction: column;
@@ -129,29 +128,42 @@
   </main>
 
   <script>
-    const NPOINT_URL = "https://api.npoint.io/f52e8ed139f32eee0dc6";
+    const WORKER_URL = "https://divine-smoke-d339.v987v654v321v0.workers.dev";
 
     async function login() {
-      const user  = document.getElementById("username").value;
-      const key   = document.getElementById("password").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
       const error = document.getElementById("error");
 
-      try {
-        const res = await fetch(NPOINT_URL);
-        const data = await res.json();
-        const users = data.users;
+      error.textContent = "";
 
-        if (users[user] && users[user] === key) {
+      if (!username || !password) {
+        error.textContent = "Please enter a username and key.";
+        return;
+      }
+
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
           localStorage.setItem("loggedIn", "true");
-          localStorage.setItem("username", user);
+          localStorage.setItem("username", username);
           window.location.href = "newsacessscodeequal9810.html";
         } else {
           error.textContent =
-            "Invalid username or password. If you dont have a valid key, click Help.";
+            "Invalid username or key. If you don’t have one, click Help.";
         }
       } catch (e) {
-        error.textContent = "Login failed. Try again later.";
         console.error(e);
+        error.textContent = "Login failed. Try again later.";
       }
     }
   </script>
