@@ -1,1 +1,166 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>I want to host my own website</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <h1>News Docs</h1>
+    <p>Please read the information below to learn how to get a key.</p>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+      <h2>How to host your own website</h2>
+      <p>
+        To host your own website, we offer $6/month for your own website.
+      </p>
+      <p>
+        You can code it! However, if you dont know how to code a website, read below.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Guide</h2>
+      <p>
+📘 upView + upScript Guide<br>
+A simple, readable language for building interactive websites<br>
+No tabs. No clutter. Order matters.<br><br>
+
+🌐 Part 1: upView (Layout & UI)<br>
+upView controls what you see.<br><br>
+
+🧱 Basic Syntax<br>
+Every line follows this pattern:<br>
+&lt;tag&gt;: content<br>
+No closing tags.<br>
+One command per line.<br><br>
+
+📝 Text<br>
+&lt;text&gt;: Hello world<br>
+Displays normal body text.<br><br>
+
+🔠 Captions (Headings)<br>
+&lt;caption&gt; 1 Title<br>
+&lt;caption&gt; 2 Subtitle<br>
+&lt;caption&gt; 3 Section<br>
+&lt;caption&gt; 4 Small heading<br>
+Size rules:<br>
+• 1 → largest<br>
+• 4 → smallest<br><br>
+
+🎨 Styles (Global Look)<br>
+&lt;modify&gt;: &lt;look&gt;: style1<br>
+&lt;modify&gt;: &lt;look&gt;: style2<br>
+&lt;modify&gt;: &lt;look&gt;: style3<br>
+Styles:<br>
+• style1 → Inter (clean, modern)<br>
+• style2 → Soft + Shadows<br>
+• style3 → Dev / Mono<br>
+Rules:<br>
+• Affects everything<br>
+• If multiple exist, only the last one applies<br><br>
+
+🔘 Buttons<br>
+&lt;button&gt;: Click me<br>
+Creates a clickable button.<br><br>
+
+🔁 Redirects (Navigation)<br>
+&lt;redirect&gt;: nice<br>
+Rules:<br>
+• Applies to the button immediately before it<br>
+• Relative by default<br>
+Example:<br>
+If you are on site.com/a/doc<br>
+Then &lt;redirect&gt;: nice<br>
+Redirects to site.com/a/nice<br>
+Absolute URLs also work.<br><br>
+
+⚙️ Part 2: upScript (Logic & Behavior)<br>
+upScript controls what happens.<br><br>
+
+🧠 Code Block<br>
+&lt;code&gt;: { }<br>
+Everything inside { } is logic.<br>
+No tabs. No indentation.<br><br>
+
+🎯 Targeting Buttons<br>
+btn.previous<br>
+Means the most recently defined button.<br>
+No IDs needed.<br><br>
+
+🖱️ Events<br>
+Currently supported:<br>
+• mouseclick<br><br>
+
+💥 Actions (Connector Syntax)<br>
+Alerts require explicit text:<br>
+btn.previous.mouseclick.connect:alert: Hello!<br>
+Actions are commands, not values.<br><br>
+
+🧪 Example<br>
+&lt;button&gt;: Click me<br>
+&lt;code&gt;: {<br>
+btn.previous.mouseclick.connect:alert: Hello from upScript!<br>
+}<br><br>
+
+✔ Order-based<br>
+✔ No tabs<br>
+✔ Explicit behavior<br>
+✔ Simple compiler<br>
+</p>
+      
+      <p>
+        Additional rules may be added in the future.
+      </p>
+      <a class="button">I Understand</a>
+    </div>
+
+    <div class="card">
+      <h2>I want to proceed</h2>
+      <p>
+        By clicking proceed, you must pay on time 6 dollars every month. You also have to talk to me and i will setup your code and website.
+      </p>
+      <p>
+        The current avaiable domains are:
+
+        v987v6543v321v0.github.io-dot/extra/news
+        v987v6543v321v0.github.io-dot/css/news
+        v987v6543v321v0.github.io-dot/roblox/gaming
+        v987v6543v321v0.github.io-dot/gaming
+
+        You must copy your code and ethier email it or discord dm it to me. Also make sure to email or dm what your domain you want to be is.
+      </p>
+      <a href="websitetester.html" class="button">Get Started</a>
+    </div>
+
+    <div class="card">
+      <h2>I Forgot My Username or Password</h2>
+      <p>
+        If you forget your login details, you must contact the website owner and provide the username and password
+        you believe you used.
+      </p>
+      <p>
+        The website owner will verify your identity and, if confirmed, provide you with your correct login information.
+      </p>
+      <a href="main.html" class="button">Get Started</a>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    © 2026 My Website
+  </footer>
+
+</body>
+</html>
