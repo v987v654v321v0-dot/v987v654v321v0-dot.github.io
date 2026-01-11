@@ -131,41 +131,34 @@
     const WORKER_URL = "https://divine-smoke-d339.v987v654v321v0.workers.dev";
 
     async function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const error = document.getElementById("error");
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const error = document.getElementById("error");
 
-      error.textContent = "";
+  error.textContent = "";
 
-      if (!username || !password) {
-        error.textContent = "Please enter a username and key.";
-        return;
-      }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
-      try {
-        const res = await fetch(WORKER_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ username, password })
-        });
+    const data = await res.json();
 
-        const data = await res.json();
-
-        if (data.success) {
-          localStorage.setItem("loggedIn", "true");
-          localStorage.setItem("username", username);
-          window.location.href = "newsacessscodeequal9810.html";
-        } else {
-          error.textContent =
-            "Invalid username or key. If you don’t have one, click Help.";
-        }
-      } catch (e) {
-        console.error(e);
-        error.textContent = "Login failed. Try again later.";
-      }
+    if (data.success && data.redirect) {
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("username", username);
+      window.location.href = data.redirect;
+    } else {
+      error.textContent = "Invalid username or key.";
     }
+
+  } catch (e) {
+    error.textContent = "Login failed. Try again later.";
+    console.error(e);
+  }
+}
   </script>
 
 </body>
