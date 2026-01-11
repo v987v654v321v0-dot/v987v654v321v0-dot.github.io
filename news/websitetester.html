@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>upView Playground</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#topbar {
+  padding: 10px;
+  background: #111;
+  color: white;
+}
+
+#topbar button {
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+}
+
+textarea {
+  width: 50%;
+  border: none;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+}
+
+iframe {
+  width: 50%;
+  border: none;
+  background: #fff;
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button onclick="run()">Execute</button>
+</div>
+
+<div id="main">
+  <textarea id="input">
+<caption> 1 Hello
+<text>: This is upView
+
+<button>: Click me
+<code>: {
+btn.previous.mouseclick.connect:alert: Hello from upScript!
+}
+  </textarea>
+
+  <iframe id="output"></iframe>
+</div>
+
+<script>
+function run() {
+  const lines = document.getElementById("input").value.split("\n");
+  let html = "";
+  let script = "";
+  let lastButtonId = 0;
+  let inCode = false;
+
+  lines.forEach(line => {
+    line = line.trim();
+    if (!line) return;
+
+    if (line === "<code>: {") {
+      inCode = true;
+      return;
+    }
+
+    if (line === "}") {
+      inCode = false;
+      return;
+    }
+
+    if (inCode) {
+      if (line.startsWith("btn.previous.mouseclick.connect:alert:")) {
+        const msg = line.split("alert:")[1].trim();
+        script += `
+document.getElementById("btn${lastButtonId}")
+  .addEventListener("click", () => alert(${JSON.stringify(msg)}));
+`;
+      }
+      return;
+    }
+
+    if (line.startsWith("<caption>")) {
+      const level = line.split(" ")[1];
+      const text = line.slice(12);
+      html += `<h${level}>${text}</h${level}>`;
+    }
+
+    if (line.startsWith("<text>:")) {
+      html += `<p>${line.slice(7)}</p>`;
+    }
+
+    if (line.startsWith("<button>:")) {
+      lastButtonId++;
+      html += `<button id="btn${lastButtonId}">${line.slice(10)}</button><br>`;
+    }
+  });
+
+  const doc = `
+<!DOCTYPE html>
+<html>
+<body>
+${html}
+<script>
+${script}
+<\/script>
+</body>
+</html>
+`;
+
+  document.getElementById("output").srcdoc = doc;
+}
+</script>
+
+</body>
+</html>
