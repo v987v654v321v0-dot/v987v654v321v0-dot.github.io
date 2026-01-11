@@ -32,7 +32,7 @@
       <h2>Ad setup.</h2>
       <p>
         You must setup the colors, text, and design for your ad.
-        The price for one ad is $1
+        The price for one ad is only $1
       </p>
       <p>
         You must pay on the date you choose.
@@ -79,7 +79,7 @@
   </footer>
 
   <script>
-const API_URL = "https://holy-mode-1a1b.v987v654v321v0.workers.dev/";
+const API_URL = "YOUR_CLOUDFLARE_WORKER_URL";
 
 async function createAd() {
   const dateInput = document.getElementById("ad-date").value;
@@ -109,40 +109,27 @@ async function createAd() {
 
   const newAd = {
     date: dateInput,
-    text: text,
-    color: color,
+    text,
+    color,
     price: 1,
     createdAt: new Date().toISOString()
   };
 
   try {
-    // 1️⃣ GET existing JSON
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error("Fetch failed");
-
-    const data = await res.json();
-
-    if (!Array.isArray(data.ads)) {
-      data.ads = [];
-    }
-
-    // 2️⃣ Add new ad
-    data.ads.push(newAd);
-
-    // 3️⃣ PUT updated JSON
-    const save = await fetch(API_URL, {
-      method: "PUT",
+    const res = await fetch(API_URL, {
+      method: "POST", // ✅ CORRECT
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(newAd)
     });
 
-    if (!save.ok) throw new Error("Save failed");
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(t);
+    }
 
     alert("✅ Ad saved successfully!");
-
-    // Optional reset
     document.getElementById("ad-text").value = "";
   } catch (err) {
     console.error(err);
