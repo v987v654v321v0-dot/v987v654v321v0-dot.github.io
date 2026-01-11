@@ -79,43 +79,85 @@
   </footer>
 
   <script>
-  function createAd() {
-    const dateInput = document.getElementById("ad-date").value;
-    const text = document.getElementById("ad-text").value.trim();
-    const color = document.getElementById("ad-color").value;
-    const error = document.getElementById("ad-error");
+const API_URL = "https://jsonsilo.com/YOUR_ENDPOINT_HERE";
+const API_KEY = "YOUR_API_KEY_HERE"; // remove if not required
 
-    error.textContent = "";
+async function createAd() {
+  const dateInput = document.getElementById("ad-date").value;
+  const text = document.getElementById("ad-text").value.trim();
+  const color = document.getElementById("ad-color").value;
+  const error = document.getElementById("ad-error");
 
-    if (!dateInput) {
-      error.textContent = "Please select a date.";
-      return;
-    }
+  error.textContent = "";
 
-    const selectedDate = new Date(dateInput);
-    const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
-
-    if (day === 0 || day === 6) {
-      error.textContent = "Weekends are not allowed. Choose a workday.";
-      return;
-    }
-
-    if (!text) {
-      error.textContent = "Ad text cannot be empty.";
-      return;
-    }
-
-    // Preview or store data
-    alert(
-      "Ad created!\n\n" +
-      "Date you must bring the money: " + dateInput + "\n" +
-      "Text: " + text + "\n" +
-      "Color: " + color + "\n" +
-      "Price: $1"
-    );
-
-    // Later: send to API / datastore / payment flow
+  if (!dateInput) {
+    error.textContent = "Please select a date.";
+    return;
   }
+
+  const selectedDate = new Date(dateInput);
+  const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+
+  if (day === 0 || day === 6) {
+    error.textContent = "Weekends are not allowed. Choose a workday.";
+    return;
+  }
+
+  if (!text) {
+    error.textContent = "Ad text cannot be empty.";
+    return;
+  }
+
+  // Build ad object
+  const newAd = {
+    date: dateInput,
+    text: text,
+    color: color,
+    price: 1
+  };
+
+  try {
+    // 1. GET existing data
+    const getRes = await fetch(API_URL, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": API_KEY
+      }
+    });
+
+    if (!getRes.ok) throw new Error("Failed to fetch ads");
+
+    const data = await getRes.json();
+
+    // Ensure ads array exists
+    if (!Array.isArray(data.ads)) {
+      data.ads = [];
+    }
+
+    // 2. Add new ad
+    data.ads.push(newAd);
+
+    // 3. PUT updated data
+    const putRes = await fetch(API_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": API_KEY
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!putRes.ok) throw new Error("Failed to save ad");
+
+    alert("✅ Ad successfully created and saved!");
+
+    // Optional reset
+    document.getElementById("ad-text").value = "";
+  } catch (err) {
+    console.error(err);
+    error.textContent = "Error saving ad. Please try again.";
+  }
+}
 </script>
 
 </body>
