@@ -68,67 +68,20 @@ btn.previous.mouseclick.connect:alert: Hello from upScript!
 </div>
 
 <script>
-function run() {
-  const lines = document.getElementById("input").value.split("\n");
-  let html = "";
-  let script = "";
-  let lastButtonId = 0;
-  let inCode = false;
+async function run() {
+  const code = document.getElementById("input").value;
 
-  lines.forEach(line => {
-    line = line.trim();
-    if (!line) return;
-
-    if (line === "<code>: {") {
-      inCode = true;
-      return;
-    }
-
-    if (line === "}") {
-      inCode = false;
-      return;
-    }
-
-    if (inCode) {
-      if (line.startsWith("btn.previous.mouseclick.connect:alert:")) {
-        const msg = line.split("alert:")[1].trim();
-        script += `
-document.getElementById("btn${lastButtonId}")
-  .addEventListener("click", () => alert(${JSON.stringify(msg)}));
-`;
-      }
-      return;
-    }
-
-    if (line.startsWith("<caption>")) {
-      const level = line.split(" ")[1];
-      const text = line.slice(12);
-      html += `<h${level}>${text}</h${level}>`;
-    }
-
-    if (line.startsWith("<text>:")) {
-      html += `<p>${line.slice(7)}</p>`;
-    }
-
-    if (line.startsWith("<button>:")) {
-      lastButtonId++;
-      html += `<button id="btn${lastButtonId}">${line.slice(10)}</button><br>`;
-    }
+  const response = await fetch("https://YOUR-WORKER-URL-HERE", {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain"
+    },
+    body: code
   });
 
-  const doc = `
-<!DOCTYPE html>
-<html>
-<body>
-${html}
-<script>
-${script}
-<\/script>
-</body>
-</html>
-`;
+  const html = await response.text();
 
-  document.getElementById("output").srcdoc = doc;
+  document.getElementById("output").srcdoc = html;
 }
 </script>
 
