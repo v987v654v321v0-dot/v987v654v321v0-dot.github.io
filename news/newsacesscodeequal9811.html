@@ -228,7 +228,7 @@ Requirements:
 </style>
 
       <p class="small">This is a paid ad bought by Arjun</p>
-      <a href="#" class="button" id="likeBtn">I hate backtalking!</a>
+      <a href="#" class="button" id="likeBtn">I wanna join!</a>
       <script>
      const btn = document.getElementById("likeBtn");
   let liked = false;
@@ -239,29 +239,26 @@ Requirements:
     liked = !liked;
 
     btn.textContent = liked
-      ? "Very valid. ✓"
-      : "I hate backtalking!";
+      ? "Reach out to him! ✓"
+      : "I wanna join!";
   });
 </script>
     </div>
 
     <div class="card">
-      <h2>Stalking</h2>
+      <h2>Website Update</h2></h2>
       <p>
-        Osama is keeping a binder on everyone, which includes license plates, pictures, a rating, and a title.
+        There is a new website builder on the bottom page. You can build your own website and publish it! It costs $6/month
       </p>
       <p>
-        Legally, this is stalking. People can take legal action. This is indetified as: "Harrasment"
+        You can reach out to the website group and propose new news ideas (NOT ADS, DO THAT IN AD MANAGER)
       </p>
       <p>
-        She is partnering with Sara, Bishesh and some more people.
-      </p>
-      <p>
-        However, a group has told on Osama of what she did. She will get punished I assume.
+        There is more news if you scroll down
       </p>
 
       <a href="#" class="button" id="blockOfCheeseBtn">
-  Click me if you dont like stalking
+  Click me if you want to be redirected to the correct discord group
 </a>
 
 <script>
@@ -270,14 +267,17 @@ Requirements:
 
     let hasCheese = false;
 
+    
+
     btn.addEventListener("click", function (e) {
+      window.location.href = "https://discord.gg/FSBjGwgV";
       e.preventDefault();
 
       hasCheese = !hasCheese;
 
       btn.textContent = hasCheese
-        ? "You have a valid opinion ✓"
-        : "Click me if you dont like stalking";
+        ? "Redirecting.. ✓"
+        : "Click me if you want to be redirected to the correct discord group";
     });
   });
 </script>
