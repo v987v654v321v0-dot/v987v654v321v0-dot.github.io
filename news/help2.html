@@ -80,7 +80,6 @@
 
   <script>
 const API_URL = "https://api.jsonsilo.com/public/4e001ae2-2fec-4537-8dbb-ccfa6fe3aab1";
-const API_KEY = "YOUR_API_KEY_HERE"; // remove if not required
 
 async function createAd() {
   const dateInput = document.getElementById("ad-date").value;
@@ -96,10 +95,10 @@ async function createAd() {
   }
 
   const selectedDate = new Date(dateInput);
-  const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+  const day = selectedDate.getDay();
 
   if (day === 0 || day === 6) {
-    error.textContent = "Weekends are not allowed. Choose a workday.";
+    error.textContent = "Weekends are not allowed.";
     return;
   }
 
@@ -108,54 +107,46 @@ async function createAd() {
     return;
   }
 
-  // Build ad object
   const newAd = {
     date: dateInput,
     text: text,
     color: color,
-    price: 1
+    price: 1,
+    createdAt: new Date().toISOString()
   };
 
   try {
-    // 1. GET existing data
-    const getRes = await fetch(API_URL, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": API_KEY
-      }
-    });
+    // 1️⃣ GET existing JSON
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Fetch failed");
 
-    if (!getRes.ok) throw new Error("Failed to fetch ads");
+    const data = await res.json();
 
-    const data = await getRes.json();
-
-    // Ensure ads array exists
     if (!Array.isArray(data.ads)) {
       data.ads = [];
     }
 
-    // 2. Add new ad
+    // 2️⃣ Add new ad
     data.ads.push(newAd);
 
-    // 3. PUT updated data
-    const putRes = await fetch(API_URL, {
+    // 3️⃣ PUT updated JSON
+    const save = await fetch(API_URL, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": API_KEY
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(data)
     });
 
-    if (!putRes.ok) throw new Error("Failed to save ad");
+    if (!save.ok) throw new Error("Save failed");
 
-    alert("✅ Ad successfully created and saved!");
+    alert("✅ Ad saved successfully!");
 
     // Optional reset
     document.getElementById("ad-text").value = "";
   } catch (err) {
     console.error(err);
-    error.textContent = "Error saving ad. Please try again.";
+    error.textContent = "Failed to save ad.";
   }
 }
 </script>
