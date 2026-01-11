@@ -108,11 +108,10 @@ async function createAd() {
   }
 
   const newAd = {
-    date: dateInput,
-    text,
-    color,
-    price: 1,
-    createdAt: new Date().toISOString()
+  date: dateInput,
+  text: text,
+  color: color,
+  createdAt: new Date().toISOString()
   };
 
   try {
