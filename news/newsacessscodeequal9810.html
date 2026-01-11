@@ -210,17 +210,25 @@
     <a href="account.html" class="account-circle">Account</a>
     
     <div class="card">
-      <h2>Backtalking</h2>
-      <p>
-        Sara's friend group is sercetly backtalking on Sara, saying bad things about her.
+      <h2 style="color: white;">Hi there! It’s Arjun and I’m looking for a ROBLOX BEDWARS SQUAD.</h2>
+      <p style="color: red;">
+Requirements:
+
+• You have played the game before and have proper skill
+• You have appropriate kits for squads (I’ll be offensive like Hannah/Aetunde or protector like Whisper)
+• You need Discord for voice communication
+• You must be family-friendly on calls
+
       </p>
-      <p>
-        Sara doesnt realise how much gossip is spreading, espescially the type of gossip that ruins friendships.
-      </p>
-      <p>
-        Gossip is personally bad. Especially stalking.
-      </p>
-      <a href="#" class="button" id="likeBtn">I hate backtalking!</a>
+
+      <style>
+  .small {
+    font-size: 0.85rem;
+  }
+</style>
+
+      <p class="small">This is a paid ad bought by Arjun</p>
+      <a href="#" class="button" id="likeBtn">I wanna join!</a>
       <script>
      const btn = document.getElementById("likeBtn");
   let liked = false;
@@ -231,29 +239,26 @@
     liked = !liked;
 
     btn.textContent = liked
-      ? "Very valid. ✓"
-      : "I hate backtalking!";
+      ? "Reach out to him! ✓"
+      : "I wanna join!";
   });
 </script>
     </div>
 
     <div class="card">
-      <h2>Stalking</h2>
+      <h2>Website Update</h2></h2>
       <p>
-        Osama is keeping a binder on everyone, which includes license plates, pictures, a rating, and a title.
+        There is a new website builder on the bottom page. You can build your own website and publish it! It costs $6/month
       </p>
       <p>
-        Legally, this is stalking. People can take legal action. This is indetified as: "Harrasment"
+        You can reach out to the website group and propose new news ideas (NOT ADS, DO THAT IN AD MANAGER)
       </p>
       <p>
-        She is partnering with Sara, Bishesh and some more people.
-      </p>
-      <p>
-        However, a group has told on Osama of what she did. She will get punished I assume.
+        There is more news if you scroll down
       </p>
 
       <a href="#" class="button" id="blockOfCheeseBtn">
-  Click me if you dont like stalking
+  Click me if you want to be redirected to the correct discord group
 </a>
 
 <script>
@@ -262,14 +267,17 @@
 
     let hasCheese = false;
 
+    
+
     btn.addEventListener("click", function (e) {
+      window.location.href = "https://discord.gg/FSBjGwgV";
       e.preventDefault();
 
       hasCheese = !hasCheese;
 
       btn.textContent = hasCheese
-        ? "You have a valid opinion ✓"
-        : "Click me if you dont like stalking";
+        ? "Redirecting.. ✓"
+        : "Click me if you want to be redirected to the correct discord group";
     });
   });
 </script>
@@ -278,15 +286,15 @@
 </div>
 
   <div class="card">
-      <h2>Strike System</h2>
+      <h2>Soulmate & Love</h2>
       <p>
-        There is a strike system in Room 4, describing how you get strikes for doing bad stuff.
+        Of course, not alot of crushes are in the classroom.
       </p>
       <p>
-        However, the teacher has decided that people who dont get strikes will be rewarded indoor recesses, the ablity to start clubs, etc.
+        However, if you roll the random number geneator below, you will get the number that is the age you will find your soulmate.
       </p>
       <p>
-        On the other hand, most people in the class have atleast 1 strike. Some do not. The machine below will guess how many strikes you will have next week.
+       
       </p>
 
       <div class="meter-box">
@@ -299,20 +307,20 @@
         <div class="meter-fill" id="meterFill"></div>
       </div>
 
-      <p id="percentText">The amount of strikes you will have is: </p>
+      <p id="percentText">The day of true love is: </p>
 
       <script>
  function generatePercent() {
-  const percent = Math.floor(Math.random() * 30); // 0–120
+  const percent = Math.floor(Math.random() * 91); // 0–120
 
   document.getElementById("meterFill").style.width = percent + " strikes.";
 
   if (percent === 0) {
     document.getElementById("percentText").textContent =
-      "Lucky one! You will get 0 strikes.";
+      "At... age 0?";
   } else {
     document.getElementById("percentText").textContent =
-      "The amount of strikes you will get is: " + percent;
+      "The day of true love is: " + percent;
   }
 }
 
@@ -328,18 +336,18 @@
     
 
 <div class="card">
-      <h2>Updates & Ads</h2>
+      <h2>we seriously run out of idea quick.</h2>
       <p>
-        To setup an ad here, you can scroll down and click the AD manager button. It costs $1 for an ad.
+        If you join this link: https://discord.gg/FSBjGwgV, you can reach the discord company.
       </p>
       <p>
-        Update log: There are new gui, login page, and updated datastore systems.
+        We will pay you a precentage of our website profits, and do a interview on you.
       </p>
       <p>
-        On sunday, Jan 17, 5:00 PM, or earlier, a DMing update will be released.
+        If you suceed, you will be hired to work for the company.
       </p>
       <p>
-        This will allow chats between 2 people on the website.
+        Thanks for reading!
       </p>
 
       <a href="#" class="button" id="blockOfCheeseBtn">
