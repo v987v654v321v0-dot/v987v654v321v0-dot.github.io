@@ -1,90 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>My Page</title>
+  <meta charset="UTF-8">
+  <title>My Page</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Montserrat font -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<style>
-* { box-sizing: border-box; }
+  <style>
+    /* ---------- Base ---------- */
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  margin: 0;
-  font-family: "Montserrat", system-ui, sans-serif;
-  background: #0f1220;
-  color: #eaeaf0;
-  line-height: 1.6;
-}
+    body {
+      margin: 0;
+      font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+      background: #0f1220;
+      color: #eaeaf0;
+      line-height: 1.6;
+    }
 
-/* Header */
-.header {
-  padding: 40px 20px 20px;
-  text-align: center;
-}
+    /* ---------- Header ---------- */
+    .header {
+      padding: 40px 20px 20px;
+      text-align: center;
+    }
 
-.header h1 {
-  margin: 0;
-  font-size: 36px;
-  font-weight: 700;
-}
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+    }
 
-.subtitle {
-  margin-top: 6px;
-  font-size: 14px;
-  opacity: 0.7;
-}
+    .subtitle {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0.7;
+    }
 
-/* Main grid */
-.main-content {
+    /* ---------- Main ---------- */
+    .main-content {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   padding: 30px 20px;
+  justify-content: center;
 }
 
-.card {
-  background: #181c33;
-  padding: 28px;
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    .card {
+      background: #181c33;
+      padding: 28px;
+      border-radius: 12px;
+      max-width: 420px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+    }
+
+    .card p {
+      font-size: 15px;
+      font-weight: 400;
+      opacity: 0.9;
+      margin-bottom: 14px;
+    }
+
+    /* ---------- Button ---------- */
+    .button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 18px;
+      background: #4c6cff;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .button:hover {
+      background: #3a56d4;
+    }
+
+    /* ---------- Footer ---------- */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      opacity: 0.6;
+    }
+
+    .meter-box {
+  margin-top: 20px;
 }
 
-.card h2 {
-  margin-top: 0;
-  font-size: 22px;
-}
-
-.card p {
-  font-size: 15px;
-  opacity: 0.9;
-}
-
-/* Buttons */
-.button {
-  display: inline-block;
-  padding: 10px 18px;
-  background: #4c6cff;
-  color: white;
-  text-decoration: none;
+.meter-box input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 14px;
   border: none;
-  cursor: pointer;
+  font-family: inherit;
 }
 
-.button:hover {
-  background: #3a56d4;
-}
-
-/* Meter */
 .meter {
   width: 100%;
   height: 14px;
   background: #2a2f55;
   border-radius: 10px;
   overflow: hidden;
+  margin: 12px 0;
 }
 
 .meter-fill {
@@ -94,118 +126,270 @@ body {
   transition: width 0.6s ease;
 }
 
-/* Account button */
-.account-circle {
+    .account-circle {
   position: fixed;
   top: 16px;
   right: 16px;
+
   width: 52px;
   height: 52px;
-  background: #4c6cff;
-  color: white;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+
+  background: #4c6cff;
+  color: white;
+  text-decoration: none;
+
   font-size: 11px;
   font-weight: 600;
-  text-decoration: none;
+  text-align: center;
+
+  border-radius: 50%;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
   z-index: 2000;
 }
 
-/* Bottom bar */
+.account-circle:hover {
+  background: #3a56d4;
+}
 .bottom-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 50px;
+
   display: flex;
-  gap: 10px;
-  padding-left: 16px;
+  align-items: center;
+  justify-content: flex-start; /* ← LEFT */
+
+  padding-left: 16px;          /* spacing from edge */
+
   background: rgba(24, 28, 51, 0.95);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
 }
 
-/* Footer */
-.footer {
-  text-align: center;
-  padding: 20px;
-  font-size: 13px;
-  opacity: 0.6;
+.help-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+
+  background: #4c6cff;
+  border-radius: 6px;
 }
-</style>
+  </style>
 </head>
 
 <body>
 
-<script>
-const username = localStorage.getItem("username");
-if (!username) location.href = "main.html";
+  <script>
+  const username = localStorage.getItem("username");
+
+  if (username) {
+    console.log("verfied....")
+  } else {
+ 
+    window.location.href = "main.html";
+    
+    
+  }
 </script>
 
-<a href="account.html" class="account-circle">Account</a>
+  <header class="header">
+    <h1>Classroom Drama</h1>
+    <p class="subtitle">We offer the best news straight up! New news every single day! Published every day at 6:00 PM or earlier</p>
+  </header>
 
-<header class="header">
-  <h1>Classroom Drama</h1>
-  <p class="subtitle">New news every day at 6:00 PM or earlier</p>
-</header>
+  <main class="main-content">
 
-<main class="main-content">
+    <a href="account.html" class="account-circle">Account</a>
+    
+    <div class="card">
+      <h2 style="color: white;" > A new teacher enters the classroom</h2>
+      <p style="color: red;">
+          Mr. V entered the classroom today and introduced many policies. Other teachers, espcially strict ones, suggested that the new
+        teacher is too premissive and allowing. The students think otherwise. The students really enjoy Mr. V, however some teachers
+        mentioned that Mr. V is not teaching the students anything. What side are you on?
 
-<div class="card">
-  <h2>A new teacher enters the classroom</h2>
-  <p style="color:red">
-    Mr. V introduced new policies. Teachers disagree. Students love him.
-  </p>
-  <a href="#" class="button" id="likeBtn">I am on Mr. V's side.</a>
+      </p>
+
+      <style>
+  
+      <a href="#" class="button" id="likeBtn">I am on Mr. V's side.</a>
+      <script>
+     const btn = document.getElementById("likeBtn");
+  let liked = false;
+
+  btn.addEventListener("click", function (e) {
+    e.preventDefault(); // stop link jump
+
+    liked = !liked;
+
+    btn.textContent = liked
+      ? "Amazing! ✓"
+      : "I am on Mr. V's side.";
+  });
+</script>
+    
+
+    <div class="card">
+      <h2>Crushes.. love? </h2>
+      <p>
+        To be honest, I believe Vlad does NOT have a crush on Isabella. Very guarnteed. Maybe not.... 
+      </p>
+      <p>
+        Anyways, in this class, there arent any real couples. There might be crushes, but most of the time, they are fake.
+      </p>
+      <h2>A new update</h2>
+      <p>
+        A small update will be added that will implement real ads into the website. It will make more money for the owner.
+      </p>
+
+      
+
+      
 </div>
 
-<div class="card">
-  <h2>The odd fact</h2>
-  <p>See how much you love someone.</p>
-  <input type="text" placeholder="Name">
-  <button class="button" onclick="generatePercent()">Check</button>
-  <div class="meter">
-    <div class="meter-fill" id="meterFill"></div>
-  </div>
-  <p id="percentText">You love that person this much:</p>
-</div>
+  <div class="card">
+      <h2>The odd fact.</h2>
+      <p>
+        No one really reads the news here. No one. I bet.
+      </p>
+      <p>
+        But if you are, thank you. Anyways, wanna see how much you love someone?
+      </p>
+      <p>
+       10% means a normal friend. 20-30% means a best friend. 40-50% means a small crush. 60-80% means a normal crush.. 80-100% means your madly in love.
+      </p>
 
-<div class="card">
-  <h2>Ads & Website</h2>
-  <p>Host your own site for $6/month.</p>
-</div>
+      <div class="meter-box">
+      <input type="text" placeholder="Name">
+     
 
-</main>
+      <button class="button" onclick="generatePercent()">Check</button>
 
-<div class="bottom-bar">
-  <button class="button" onclick="logout()">Logout</button>
-  <button class="button" onclick="location.href='games.html'">Games</button>
-</div>
+      <div class="meter">
+        <div class="meter-fill" id="meterFill"></div>
+      </div>
 
-<footer class="footer">© 2026 My Website</footer>
+      <p id="percentText">You love that person this much:</p>
 
-<script>
-const likeBtn = document.getElementById("likeBtn");
-let liked = false;
-likeBtn.onclick = e => {
-  e.preventDefault();
-  liked = !liked;
-  likeBtn.textContent = liked ? "Amazing! ✓" : "I am on Mr. V's side.";
-};
+      <script>
+ function generatePercent() {
+  const percent = Math.floor(Math.random() * 101); // 0–120
 
-function generatePercent() {
-  const percent = Math.floor(Math.random() * 101);
   document.getElementById("meterFill").style.width = percent + "%";
-  document.getElementById("percentText").textContent =
-    percent === 0 ? "No connection at all." : `You love that person this much: ${percent}%`;
+
+  if (percent === 0) {
+    document.getElementById("percentText").textContent =
+      "No connection at all.";
+  } else {
+    document.getElementById("percentText").textContent =
+      "You love that person this much:" + percent;
+  }
 }
 
-function logout() {
-  localStorage.removeItem("username");
-  location.href = "main.html";
-}
 </script>
+    
+  </div>
+  
+
+  
+
+  
+
+    
+
+<div class="card">
+      <h2>Ads & Website</h2>
+      <p>
+        If you want to make your own website, go down into the 'I want to make my own website' button.
+      </p>
+      <p>
+        It only costs $6/month!
+      </p>
+      <p>
+        You can post a ad when you go to Ad Manage, the button.
+      </p>
+      <p>
+        Thanks for reading! Please enjoy the rest of your day! Supporting the website by making a ad will really help.
+      </p>
+
+</div>
+
+<div class="card">
+      <h2>A close call.</h2>
+      <p>
+        Some drama was airing on the website during the weekand about Sara. This would be really bad if she saw it.
+      </p>
+      <p>
+        However, most of it wasent seen as weekand posts are usuallly arent seen as much.
+      </p>
+      <h2>A new change.</h2>
+      <p>
+        On Monday, news will be published at 6:30 PM instead of 7:00 due to timing issues.
+      </p>
+      <p>
+        On Sundays and Saturdays, news will be published at 2:30 PM.
+      </p>
+
+      <a href="#" class="button" id="blockOfCheeseBtn">
+  Click me if you like the update
+</a>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("blockOfCheeseBtn");
+
+    let hasCheese = false;
+
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      hasCheese = !hasCheese;
+
+      btn.textContent = hasCheese
+        ? "You have a valid opinion ✓"
+        : "Click me if you like the update";
+    });
+  });
+</script>
+
+      
+</div>
+  </header>
+  </main>
+
+ <div class="bottom-bar">
+  <button class="button danger" onclick="location.href='main.html'">
+    ALERT (logout)
+  </button>
+
+  <button class="button" onclick="location.href='games.html'">
+    Games and Fun
+  </button>
+
+  <button class="button secondary" onclick="location.href='help2.html'">
+    Ad Manager
+  </button>
+
+  <button class="button secondary" onclick="location.href='account.html'">
+    Account Settings
+  </button>
+
+   <button class="button secondary" onclick="location.href='websitehost.html'">
+    I want to host a website
+  </button>
+</div>
+
+  <footer class="footer">
+    © 2026 My Website
+  </footer>
 
 </body>
 </html>
