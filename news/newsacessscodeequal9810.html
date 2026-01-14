@@ -210,17 +210,22 @@
     <a href="account.html" class="account-circle">Account</a>
     
     <div class="card">
-      <h2 style="color: white;" > A new teacher enters the classroom</h2>
+      <h2 style="color: white;" >Shipping</h2>
       <p style="color: red;">
-          Mr. V entered the classroom today and introduced many policies. Other teachers, espcially strict ones, suggested that the new
-        teacher is too premissive and allowing. The students think otherwise. The students really enjoy Mr. V, however some teachers
-        mentioned that Mr. V is not teaching the students anything. What side are you on?
+          Here are a list of crushes likey to be couples.
+
+        1. Samiya & Zayir = 78% chance
+        2. Sara & Ali. K = 6% chance
+        3. Isabella & Vlad = Infinity % chance
+        4. Jenny & Jermey = 12% chance
+
+        Also DO NOT ASK about number 3. DO NOT ASK. Do not speak of it. Do not talk about why it says that.
 
       </p>
 
      
   
-      <a href="#" class="button" id="likeBtn">I am on Mr. V's side.</a>
+      <a href="#" class="button" id="likeBtn">I think Vlad does NOT like Isabella</a>
       <script>
      const btn = document.getElementById("likeBtn");
   let liked = false;
@@ -231,8 +236,8 @@
     liked = !liked;
 
     btn.textContent = liked
-      ? "Amazing! ✓"
-      : "I am on Mr. V's side.";
+      ? "YES YOU ARE RIGHT ✓"
+      : "I think Vlad does NOT like Isabella";
   });
 </script>
 
@@ -240,17 +245,67 @@
     
 
     <div class="card">
-      <h2>Crushes.. love? </h2>
+      <h2>Everyone in the class has atleast one flavor.</h2>
       <p>
-        To be honest, I believe Vlad does NOT have a crush on Isabella. Very guarnteed. Maybe not.... 
+        Sweet = Kind and nice<br>
+        Sour = Sassy, sometimes does mischief<br>
+        Spicy = Oddly Attractive to others, rizzful<br>
+        Bitter = Irritating, but a good friend<br>
+        Salty = Quiet, but very empathetic.<br>
+        All of the Flavors = You are kind, nice, attrative, a good friend, and a litte bit sassy at times.
       </p>
       <p>
-        Anyways, in this class, there arent any real couples. There might be crushes, but most of the time, they are fake.
+        You can see by doing the tester below. The answers are not randomized, it does math and thinking to see what you are.
       </p>
-      <h2>A new update</h2>
-      <p>
-        A small update will be added that will implement real ads into the website. It will make more money for the owner.
-      </p>
+
+      <input
+    type="text"
+    id="nameInput"
+    placeholder="Enter your name"
+    style="padding:6px; width:100%; box-sizing:border-box;"
+  >
+
+  <br><br>
+
+  <button class="button" onclick="generateFlavor()">Check</button>
+
+  <p id="result" style="margin-top:12px; font-weight:600;"></p>
+
+      <script>
+  function generateFlavor() {
+    const input = document.getElementById("nameInput");
+    const name = input.value.toLowerCase().trim();
+
+    if (!name) {
+      document.getElementById("result").textContent =
+        "Please enter a name.";
+      return;
+    }
+
+    let score = 0;
+    for (let i = 0; i < name.length; i++) {
+      const code = name.charCodeAt(i);
+      if (code >= 97 && code <= 122) {
+        score += code - 96;
+      }
+    }
+
+    const flavors = [
+      "🌶️ Spicy",
+      "🍋 Sour",
+      "🍭 Sweet",
+      "🧂 Salty",
+      "☕ Bitter",
+      "🌈 All Flavors"
+    ];
+
+    const flavor = flavors[score % flavors.length];
+
+    document.getElementById("result").textContent =
+      input.value + ", your personality flavor is: " + flavor;
+  }
+</script>
+      
 
       
 
@@ -258,15 +313,21 @@
 </div>
 
   <div class="card">
-      <h2>The odd fact.</h2>
+      <h2>Do you want to make your own website?</h2>
       <p>
-        No one really reads the news here. No one. I bet.
+        Look, i understand making a website is difficult, possibly hard. However, we introduced
+        a new feature where you can have an assitant help you do the work for you! Just go to the I want to build a website page, click AI mode
+        and have your website built! With you're name on it!
       </p>
       <p>
-        But if you are, thank you. Anyways, wanna see how much you love someone?
+        Just the tap of a button. Maybe you can make another news website! 
       </p>
       <p>
-       10% means a normal friend. 20-30% means a best friend. 40-50% means a small crush. 60-80% means a normal crush.. 80-100% means your madly in love.
+       Please do not ask the AI assitant to make a virus website. It wont anyway though.
+      </p>
+
+      <p>
+        We will also repeat this thing today.
       </p>
 
       <div class="meter-box">
@@ -308,30 +369,47 @@
     
 
 <div class="card">
-      <h2>Ads & Website</h2>
+      <h2>Do this test to see if you have a crush or feelings on a person.</h2>
       <p>
-        If you want to make your own website, go down into the 'I want to make my own website' button.
+        Question 1
+        If you think about that person almost never, give yourself 1 point.<br>
+        If you think about that person sometimes, give yourself 2 point.<br>
+        If you think about that person alot, give yourself 3 points.
       </p>
       <p>
-        It only costs $6/month!
+        Question 2<br>
+        If you imagine them spending time with someone else:<br>
+        If it doesn’t bother you, give yourself 1 point.<br>
+        If it feels slightly uncomfortable, give yourself 2 points.<br>
+        If it genuinely bothers you, give yourself 3 points.
       </p>
       <p>
-        You can post a ad when you go to Ad Manage, the button.
+        Question 3<br>
+        Do you truly believe you have a crush on that person?<br>
+        Never. That person is gross! Give yourself 1 point.<br>
+        I probably do, but im not sure, give yourself 2 points.<br>
+        I do, give yourself 3 points.
       </p>
       <p>
-        Thanks for reading! Please enjoy the rest of your day! Supporting the website by making a ad will really help.
+        Count your points.<br>
+
+        3-4. No romantic feelings.<br>
+
+        5-6. You might like them.<br>
+
+        7-8. You really have a crush.<br>
+
+        9. You are madly in love!
       </p>
 
 </div>
 
 <div class="card">
-      <h2>A close call.</h2>
+      <h2>Soon, we are doing video news, but the company is still deciding.</h2>
       <p>
-        Some drama was airing on the website during the weekand about Sara. This would be really bad if she saw it.
+      You can learn more by reaching out to Tech Support
       </p>
-      <p>
-        However, most of it wasent seen as weekand posts are usuallly arent seen as much.
-      </p>
+  
       <h2>A new change.</h2>
       <p>
         On Monday, news will be published at 6:30 PM instead of 7:00 due to timing issues.
