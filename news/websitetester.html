@@ -151,7 +151,7 @@ btn.previous.mouseclick.connect:alert: Hello from upScript!
 </div>
 
 <script>
-const BASE_URL = "https://crimson-credit-f0fa.v987v654v321v0.workers.dev";
+const BASE_URL = "https://crimson-credit-f0fa.v987v654v321v0.workers.dev/"; // unchanged
 const loadingBar = document.getElementById("loadingBar");
 const aiBtn = document.getElementById("aiBtn");
 
@@ -164,8 +164,15 @@ async function run() {
     body: code
   });
 
-  const html = await response.text();
-  document.getElementById("output").srcdoc = html;
+  const data = await response.json();
+
+  // Render compiled HTML
+  document.getElementById("output").srcdoc = data.html;
+
+  // OPTIONAL: ensure editor stays in sync
+  if (data.upview) {
+    document.getElementById("input").value = data.upview;
+  }
 }
 
 async function runAI() {
@@ -187,8 +194,16 @@ async function runAI() {
       body: prompt
     });
 
-    const html = await response.text();
-    document.getElementById("output").srcdoc = html;
+    const data = await response.json();
+
+    // Show compiled HTML
+    document.getElementById("output").srcdoc = data.html;
+
+    // Populate editor with AI-generated upView
+    if (data.upview) {
+      document.getElementById("input").value = data.upview;
+    }
+
   } finally {
     loadingBar.style.display = "none";
     aiBtn.disabled = false;
