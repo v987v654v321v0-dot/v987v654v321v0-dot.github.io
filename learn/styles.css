@@ -1,79 +1,87 @@
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Body */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
-    color: #333;
-    line-height: 1.6;
+  margin: 0;
+  font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+  background: #0f1220;
+  color: #eaeaf0;
+  line-height: 1.6;
 }
 
 /* Header */
-header {
-    background: #1e3a8a;
-    color: white;
-    text-align: center;
-    padding: 20px;
+.header {
+  padding: 40px 20px 20px;
+  text-align: center;
 }
 
-/* Navigation */
-nav {
-    background: #111827;
+.header h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
 }
 
-nav ul {
-    display: flex;
-    justify-content: center;
-    list-style: none;
+.subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.7;
 }
 
-nav ul li {
-    margin: 10px 20px;
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-nav a:hover {
-    color: #60a5fa;
-}
-
-/* Main content */
-main {
-    padding: 20px;
-    max-width: 900px;
-    margin: auto;
+/* Grid */
+.main-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 30px 20px;
+  justify-content: center;
 }
 
 /* Cards */
 .card {
-    background: white;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  background: #181c33;
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  transition: transform 0.2s ease;
 }
 
-/* Highlight */
-.highlight {
-    font-size: 24px;
-    font-weight: bold;
-    color: #1e3a8a;
+.card:hover {
+  transform: translateY(-6px);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.card p {
+  font-size: 15px;
+  opacity: 0.9;
+  margin-bottom: 14px;
+}
+
+/* Button */
+.button {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 18px;
+  background: #4c6cff;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.button:hover {
+  background: #3a56d4;
 }
 
 /* Footer */
-footer {
-    text-align: center;
-    padding: 15px;
-    background: #111827;
-    color: white;
-    margin-top: 20px;
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 13px;
+  opacity: 0.6;
 }
