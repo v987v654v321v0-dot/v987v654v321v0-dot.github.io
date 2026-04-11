@@ -157,7 +157,6 @@
       background: #4752c4;
     }
 
-    /* PRIVATE MENU */
     #privateMenu {
       position: absolute;
       bottom: 70px;
@@ -192,6 +191,7 @@
 <div id="sidebar">
   <button class="nav-btn" onclick="go('/news/main')">🔐 Login</button>
   <button class="nav-btn" onclick="go('/news/account.html')">⚙️ Settings</button>
+  <button class="nav-btn" onclick="toggleNotify()">🔔 Notify: OFF</button>
 </div>
 
 <div id="main">
@@ -229,6 +229,14 @@
 <script>
 const API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/chat";
 
+let notifyEnabled = false;
+let lastMessageCount = 0;
+
+function toggleNotify() {
+  notifyEnabled = !notifyEnabled;
+  event.target.innerText = "🔔 Notify: " + (notifyEnabled ? "ON" : "OFF");
+}
+
 function go(url) {
   window.location.href = url;
 }
@@ -257,6 +265,17 @@ async function load() {
   const res = await fetch(API);
   const data = await res.json();
 
+  // 🔔 NOTIFICATION LOGIC
+  if (
+    notifyEnabled &&
+    document.hidden &&
+    data.length > lastMessageCount
+  ) {
+    new Audio("notify.mp3").play();
+  }
+
+  lastMessageCount = data.length;
+
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
   users.clear();
@@ -268,12 +287,8 @@ async function load() {
     let text = m.text;
     let isPrivate = false;
 
-    // 👻 HIDE FROM SENDER IF "{{{" EXISTS
-    if (text.includes("{{{") && m.user === username) {
-      return;
-    }
+    if (text.includes("{{{") && m.user === username) return;
 
-    // 🔒 PRIVATE SYSTEM
     let match = text.match(/^%(.*?)% (.*)/);
 
     if (match) {
@@ -303,7 +318,6 @@ async function load() {
 
     const div = document.createElement("div");
     div.className = "msg";
-
     if (isPrivate) div.classList.add("private");
 
     const time = new Date(m.time).toLocaleTimeString();
@@ -321,7 +335,6 @@ async function load() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// PRIVATE MENU
 function togglePrivateMenu() {
   const menu = document.getElementById("privateMenu");
   menu.style.display = menu.style.display === "flex" ? "none" : "flex";
@@ -362,9 +375,7 @@ async function send(textOverride = null) {
 
   await fetch(API, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       user: username,
       text: text
@@ -379,7 +390,7 @@ function sendEmoji(e) {
   send(e);
 }
 
-document.getElementById("msg").addEventListener("keypress", function(e) {
+document.getElementById("msg").addEventListener("keypress", e => {
   if (e.key === "Enter") send();
 });
 
