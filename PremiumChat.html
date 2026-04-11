@@ -244,18 +244,25 @@ async function load() {
     let text = m.text;
     let isPrivate = false;
 
-    // 🔒 PRIVATE MESSAGE SYSTEM
-    let match = text.match(/^%A (.*?)% (.*)/);
+   let match = text.match(/^%A (.*?)% (.*)/);
 
-    if (match) {
-      const targetUser = match[1];
-      const actualMessage = match[2];
+if (match) {
+  const targetUser = match[1];
+  const actualMessage = match[2];
 
-      if (targetUser !== username) return;
+  isPrivate = true;
 
-      text = actualMessage;
-      isPrivate = true;
-    }
+  // 🧠 ADMIN OVERRIDE
+  if (username === "admin-account") {
+    text = `<i style="color:#f04747;">(privately sent to: ${targetUser})</i><br>${actualMessage}`;
+  }
+  else if (targetUser === username) {
+    text = actualMessage;
+  }
+  else {
+    return; // hide from others
+  }
+}
 
     // 🔍 FILTER
     if (activeFilter && m.user !== activeFilter) return;
