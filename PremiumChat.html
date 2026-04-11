@@ -132,6 +132,7 @@
       padding: 10px;
       background: #2b2d31;
       border-top: 1px solid #1a1b1e;
+      gap: 6px;
     }
 
     input {
@@ -144,7 +145,6 @@
     }
 
     button.send {
-      margin-left: 10px;
       padding: 10px;
       background: #5865f2;
       border: none;
@@ -156,6 +156,34 @@
     button.send:hover {
       background: #4752c4;
     }
+
+    /* 🔥 PRIVATE MENU */
+    #privateMenu {
+      position: absolute;
+      bottom: 70px;
+      left: 220px;
+      background: #2b2d31;
+      border: 1px solid #111;
+      padding: 10px;
+      border-radius: 8px;
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .user-option {
+      padding: 6px;
+      background: #383a40;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .user-option:hover {
+      background: #5865f2;
+    }
+
   </style>
 </head>
 
@@ -188,9 +216,13 @@
     <span class="emoji" onclick="sendEmoji('👀')">👀</span>
   </div>
 
+  <!-- 🔥 PRIVATE MENU -->
+  <div id="privateMenu"></div>
+
   <div id="bar">
     <input id="msg" placeholder="Type message..." />
     <button class="send" onclick="send()">Send</button>
+    <button class="send" onclick="togglePrivateMenu()">Private</button>
   </div>
 
 </div>
@@ -209,6 +241,7 @@ if (!username) {
 }
 
 let activeFilter = "";
+let users = new Set();
 
 function applyFilter() {
   activeFilter = document.getElementById("filterInput").value.trim();
@@ -227,13 +260,15 @@ async function load() {
 
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
+  users.clear();
 
   data.forEach(m => {
+
+    users.add(m.user);
 
     let text = m.text;
     let isPrivate = false;
 
-    // 🔥 NEW PRIVATE SYSTEM: %username%
     let match = text.match(/^%(.*?)% (.*)/);
 
     if (match) {
@@ -242,23 +277,19 @@ async function load() {
 
       isPrivate = true;
 
-      // ❌ Hide from everyone except sender, receiver, admin
       if (
         username !== targetUser &&
         username !== m.user &&
         username !== "admin-account"
-      ) {
-        return;
-      }
+      ) return;
 
-      // Labels
       if (username === "admin-account") {
         text = `<i style="color:#f04747;">(private → ${targetUser})</i>${actualMessage}`;
       }
       else if (username === targetUser) {
         text = `<i style="color:#43b581;">(private to you)</i>${actualMessage}`;
       }
-      else if (username === m.user) {
+      else {
         text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${actualMessage}`;
       }
     }
@@ -281,7 +312,41 @@ async function load() {
     chat.appendChild(div);
   });
 
+  renderUserMenu();
   chat.scrollTop = chat.scrollHeight;
+}
+
+// 🔥 PRIVATE MENU
+function togglePrivateMenu() {
+  const menu = document.getElementById("privateMenu");
+  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+}
+
+function renderUserMenu() {
+  const menu = document.getElementById("privateMenu");
+  menu.innerHTML = "";
+
+  users.forEach(u => {
+    if (u === username) return;
+
+    const div = document.createElement("div");
+    div.className = "user-option";
+    div.textContent = u;
+
+    div.onclick = () => {
+      sendPrivate(u);
+      menu.style.display = "none";
+    };
+
+    menu.appendChild(div);
+  });
+}
+
+function sendPrivate(target) {
+  const input = document.getElementById("msg");
+  if (!input.value) return;
+
+  send(`%${target}% ${input.value}`);
 }
 
 async function send(textOverride = null) {
