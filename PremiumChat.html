@@ -12,7 +12,6 @@
       height: 100vh;
     }
 
-    /* SIDEBAR */
     #sidebar {
       width: 200px;
       background: #2b2d31;
@@ -37,14 +36,12 @@
       background: #5865f2;
     }
 
-    /* MAIN */
     #main {
       flex: 1;
       display: flex;
       flex-direction: column;
     }
 
-    /* FILTER */
     #filterBar {
       display: flex;
       padding: 10px;
@@ -109,7 +106,6 @@
       margin-left: 6px;
     }
 
-    /* EMOJI BAR */
     #emojiBar {
       display: flex;
       flex-wrap: wrap;
@@ -131,7 +127,6 @@
       background: #5865f2;
     }
 
-    /* INPUT */
     #bar {
       display: flex;
       padding: 10px;
@@ -166,25 +161,20 @@
 
 <body>
 
-<!-- SIDEBAR -->
 <div id="sidebar">
   <button class="nav-btn" onclick="go('/news/main')">🔐 Login</button>
   <button class="nav-btn" onclick="go('/news/account.html')">⚙️ Settings</button>
 </div>
 
-<!-- MAIN -->
 <div id="main">
 
-  <!-- FILTER -->
   <div id="filterBar">
     <input id="filterInput" placeholder="Filter by username..." />
     <button id="filterBtn" onclick="applyFilter()">Filter</button>
   </div>
 
-  <!-- CHAT -->
   <div id="chat"></div>
 
-  <!-- EMOJIS -->
   <div id="emojiBar">
     <span class="emoji" onclick="sendEmoji('🔥')">🔥</span>
     <span class="emoji" onclick="sendEmoji('😂')">😂</span>
@@ -198,7 +188,6 @@
     <span class="emoji" onclick="sendEmoji('👀')">👀</span>
   </div>
 
-  <!-- INPUT -->
   <div id="bar">
     <input id="msg" placeholder="Type message..." />
     <button class="send" onclick="send()">Send</button>
@@ -244,22 +233,33 @@ async function load() {
     let text = m.text;
     let isPrivate = false;
 
-    let match = text.match(/^%A (.*?)% (.*)/);
+    // 🔥 NEW PRIVATE SYSTEM: %username%
+    let match = text.match(/^%(.*?)% (.*)/);
 
     if (match) {
-      const targetUser = match[1];
+      const targetUser = match[1].trim();
       const actualMessage = match[2];
 
       isPrivate = true;
 
-      if (username === "admin-account") {
-        text = `<i style="color:#f04747;">(privately sent to: ${targetUser})</i>${actualMessage}`;
-      }
-      else if (targetUser === username) {
-        text = actualMessage;
-      }
-      else {
+      // ❌ Hide from everyone except sender, receiver, admin
+      if (
+        username !== targetUser &&
+        username !== m.user &&
+        username !== "admin-account"
+      ) {
         return;
+      }
+
+      // Labels
+      if (username === "admin-account") {
+        text = `<i style="color:#f04747;">(private → ${targetUser})</i>${actualMessage}`;
+      }
+      else if (username === targetUser) {
+        text = `<i style="color:#43b581;">(private to you)</i>${actualMessage}`;
+      }
+      else if (username === m.user) {
+        text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${actualMessage}`;
       }
     }
 
