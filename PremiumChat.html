@@ -42,6 +42,32 @@
       flex-direction: column;
     }
 
+    #filterBar {
+      display: flex;
+      padding: 10px;
+      gap: 10px;
+      background: #2b2d31;
+      border-bottom: 1px solid #1a1b1e;
+    }
+
+    #filterInput {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      background: #383a40;
+      color: white;
+    }
+
+    #filterBtn {
+      padding: 8px 12px;
+      background: #5865f2;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
     #chat {
       flex: 1;
       overflow-y: auto;
@@ -65,8 +91,8 @@
 
     .private i {
       display: block;
-      font-size: 12px;
       margin-bottom: 4px;
+      font-size: 12px;
     }
 
     .user {
@@ -80,12 +106,32 @@
       margin-left: 6px;
     }
 
+    #emojiBar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px;
+      background: #2b2d31;
+      border-top: 1px solid #1a1b1e;
+    }
+
+    .emoji {
+      font-size: 20px;
+      padding: 6px;
+      cursor: pointer;
+      border-radius: 6px;
+      background: #383a40;
+    }
+
+    .emoji:hover {
+      background: #5865f2;
+    }
+
     #bar {
       display: flex;
       padding: 10px;
       background: #2b2d31;
       border-top: 1px solid #1a1b1e;
-      gap: 6px;
     }
 
     input {
@@ -97,46 +143,19 @@
       color: white;
     }
 
-    button {
+    button.send {
+      margin-left: 10px;
       padding: 10px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
       background: #5865f2;
+      border: none;
+      border-radius: 8px;
       color: white;
+      cursor: pointer;
     }
 
-    button:hover {
+    button.send:hover {
       background: #4752c4;
     }
-
-    /* 🔥 PRIVATE MENU */
-    #privateMenu {
-      position: absolute;
-      bottom: 70px;
-      left: 220px;
-      background: #2b2d31;
-      border: 1px solid #111;
-      padding: 10px;
-      border-radius: 8px;
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .user-option {
-      padding: 6px;
-      background: #383a40;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .user-option:hover {
-      background: #5865f2;
-    }
-
   </style>
 </head>
 
@@ -149,15 +168,29 @@
 
 <div id="main">
 
+  <div id="filterBar">
+    <input id="filterInput" placeholder="Filter by username..." />
+    <button id="filterBtn" onclick="applyFilter()">Filter</button>
+  </div>
+
   <div id="chat"></div>
 
-  <!-- PRIVATE MENU -->
-  <div id="privateMenu"></div>
+  <div id="emojiBar">
+    <span class="emoji" onclick="sendEmoji('🔥')">🔥</span>
+    <span class="emoji" onclick="sendEmoji('😂')">😂</span>
+    <span class="emoji" onclick="sendEmoji('❤️')">❤️</span>
+    <span class="emoji" onclick="sendEmoji('👍')">👍</span>
+    <span class="emoji" onclick="sendEmoji('😎')">😎</span>
+    <span class="emoji" onclick="sendEmoji('😭')">😭</span>
+    <span class="emoji" onclick="sendEmoji('🎉')">🎉</span>
+    <span class="emoji" onclick="sendEmoji('😡')">😡</span>
+    <span class="emoji" onclick="sendEmoji('🤯')">🤯</span>
+    <span class="emoji" onclick="sendEmoji('👀')">👀</span>
+  </div>
 
   <div id="bar">
     <input id="msg" placeholder="Type message..." />
-    <button onclick="send()">Send</button>
-    <button onclick="togglePrivateMenu()">Private</button>
+    <button class="send" onclick="send()">Send</button>
   </div>
 
 </div>
@@ -171,36 +204,36 @@ function go(url) {
 
 let username = localStorage.getItem("username");
 if (!username) {
-  username = prompt("Enter username:");
+  username = prompt("Enter your username:");
   localStorage.setItem("username", username);
 }
 
-// STORE USERS
-let users = new Set();
+let activeFilter = "";
 
-// FORMAT
+function applyFilter() {
+  activeFilter = document.getElementById("filterInput").value.trim();
+  load();
+}
+
 function formatText(text) {
   return text
     .replace(/##(.*?)##/g, "<b>$1</b>")
     .replace(/#(.*?)#/g, "<i>$1</i>");
 }
 
-// LOAD
 async function load() {
   const res = await fetch(API);
   const data = await res.json();
 
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
-  users.clear();
 
   data.forEach(m => {
-
-    users.add(m.user);
 
     let text = m.text;
     let isPrivate = false;
 
+    // 🔥 NEW PRIVATE SYSTEM: %username%
     let match = text.match(/^%(.*?)% (.*)/);
 
     if (match) {
@@ -209,25 +242,32 @@ async function load() {
 
       isPrivate = true;
 
+      // ❌ Hide from everyone except sender, receiver, admin
       if (
         username !== targetUser &&
         username !== m.user &&
         username !== "admin-account"
-      ) return;
+      ) {
+        return;
+      }
 
+      // Labels
       if (username === "admin-account") {
         text = `<i style="color:#f04747;">(private → ${targetUser})</i>${actualMessage}`;
       }
       else if (username === targetUser) {
         text = `<i style="color:#43b581;">(private to you)</i>${actualMessage}`;
       }
-      else {
+      else if (username === m.user) {
         text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${actualMessage}`;
       }
     }
 
+    if (activeFilter && m.user !== activeFilter) return;
+
     const div = document.createElement("div");
     div.className = "msg";
+
     if (isPrivate) div.classList.add("private");
 
     const time = new Date(m.time).toLocaleTimeString();
@@ -241,46 +281,9 @@ async function load() {
     chat.appendChild(div);
   });
 
-  renderUserMenu();
-
   chat.scrollTop = chat.scrollHeight;
 }
 
-// PRIVATE MENU
-function togglePrivateMenu() {
-  const menu = document.getElementById("privateMenu");
-  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-}
-
-function renderUserMenu() {
-  const menu = document.getElementById("privateMenu");
-  menu.innerHTML = "";
-
-  users.forEach(u => {
-    if (u === username) return;
-
-    const div = document.createElement("div");
-    div.className = "user-option";
-    div.textContent = u;
-
-    div.onclick = () => {
-      sendPrivate(u);
-      menu.style.display = "none";
-    };
-
-    menu.appendChild(div);
-  });
-}
-
-// SEND PRIVATE
-function sendPrivate(target) {
-  const input = document.getElementById("msg");
-  if (!input.value) return;
-
-  send(`%${target}% ${input.value}`);
-}
-
-// SEND
 async function send(textOverride = null) {
   const input = document.getElementById("msg");
   const text = textOverride || input.value;
@@ -302,8 +305,11 @@ async function send(textOverride = null) {
   load();
 }
 
-// ENTER
-document.getElementById("msg").addEventListener("keypress", e => {
+function sendEmoji(e) {
+  send(e);
+}
+
+document.getElementById("msg").addEventListener("keypress", function(e) {
   if (e.key === "Enter") send();
 });
 
