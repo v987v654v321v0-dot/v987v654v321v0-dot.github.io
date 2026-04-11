@@ -5,22 +5,34 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial;
-      background: #313338;
+      font-family: "Segoe UI", Arial;
+      background: #1e1f22;
       color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
 
     #chat {
-      height: 90vh;
+      flex: 1;
       overflow-y: auto;
-      padding: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .msg {
       background: #2b2d31;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 6px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      max-width: 70%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: 0.2s;
+    }
+
+    .msg:hover {
+      background: #32353b;
     }
 
     .user {
@@ -28,24 +40,48 @@
       color: #5865f2;
     }
 
+    .time {
+      font-size: 11px;
+      opacity: 0.5;
+      margin-left: 6px;
+    }
+
     #bar {
       display: flex;
-      height: 10vh;
+      padding: 10px;
+      background: #2b2d31;
+      border-top: 1px solid #1a1b1e;
     }
 
     input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
+      border-radius: 8px;
       border: none;
       background: #383a40;
       color: white;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input::placeholder {
+      color: #aaa;
     }
 
     button {
-      padding: 10px;
+      margin-left: 10px;
+      padding: 12px 16px;
       background: #5865f2;
       border: none;
+      border-radius: 8px;
       color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #4752c4;
     }
   </style>
 </head>
@@ -62,7 +98,7 @@
 <script>
 const API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/chat";
 
-// 🔥 USERNAME SETUP
+// USERNAME
 let username = localStorage.getItem("username");
 
 if (!username) {
@@ -70,7 +106,14 @@ if (!username) {
   localStorage.setItem("username", username);
 }
 
-// Load messages
+// ✨ FORMAT FUNCTION
+function formatText(text) {
+  return text
+    .replace(/##(.*?)##/g, "<b>$1</b>")   // bold
+    .replace(/#(.*?)#/g, "<i>$1</i>");   // italic
+}
+
+// LOAD MESSAGES
 async function load() {
   const res = await fetch(API);
   const data = await res.json();
@@ -85,18 +128,21 @@ async function load() {
     const time = new Date(m.time).toLocaleTimeString();
 
     div.innerHTML = `
-      <span class="user">${m.user}</span> 
-      <small style="opacity:0.6;">[${time}]</small><br>
-      ${m.text}
+      <span class="user">${m.user}</span>
+      <span class="time">[${time}]</span><br>
+      ${formatText(m.text)}
     `;
 
     chat.appendChild(div);
   });
 
-  chat.scrollTop = chat.scrollHeight;
+  chat.scrollTo({
+    top: chat.scrollHeight,
+    behavior: "smooth"
+  });
 }
 
-// Send message
+// SEND MESSAGE
 async function send() {
   const input = document.getElementById("msg");
 
@@ -117,7 +163,12 @@ async function send() {
   load();
 }
 
-// Auto refresh
+// ENTER KEY SUPPORT 🔥
+document.getElementById("msg").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") send();
+});
+
+// AUTO REFRESH
 setInterval(load, 2000);
 load();
 </script>
