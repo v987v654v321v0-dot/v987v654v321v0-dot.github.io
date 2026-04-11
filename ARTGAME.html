@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Draw & Guess</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #1e1f22;
+      color: white;
+      text-align: center;
+    }
+
+    canvas {
+      background: white;
+      cursor: crosshair;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎨 Draw & Guess</h1>
+
+<div id="menu">
+  <input id="code" placeholder="Room code">
+  <button onclick="join()">Join</button>
+  <p id="status"></p>
+</div>
+
+<div id="game" style="display:none;">
+  <h2 id="role"></h2>
+  <h3 id="word"></h3>
+
+  <canvas id="canvas" width="300" height="300"></canvas>
+
+  <div id="guessArea">
+    <input id="guess" placeholder="Your guess">
+    <button onclick="sendGuess()">Guess</button>
+  </div>
+</div>
+
+<script>
+const API = "https://holy-mode-1a1b.v987v654v321v0.workers.dev/";
+
+let room = "";
+let role = "";
+let word = "";
+let drawing = false;
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function join() {
+  room = document.getElementById("code").value;
+
+  fetch(API + "/join", {
+    method: "POST",
+    body: JSON.stringify({ room })
+  })
+  .then(r => r.json())
+  .then(data => {
+    role = data.role;
+    document.getElementById("status").innerText = "Waiting...";
+    waitStart();
+  });
+}
+
+function waitStart() {
+  const int = setInterval(() => {
+    fetch(API + "/state?room=" + room)
+      .then(r => r.json())
+      .then(data => {
+        if (data.players === 2) {
+          clearInterval(int);
+          start(data);
+        }
+      });
+  }, 1000);
+}
+
+function start(data) {
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("game").style.display = "block";
+
+  word = data.word;
+
+  document.getElementById("role").innerText = role;
+
+  if (role === "drawer") {
+    document.getElementById("word").innerText = "Draw: " + word;
+  } else {
+    document.getElementById("word").innerText = "Guess the word!";
+  }
+
+  if (role === "drawer") enableDrawing();
+  else disableDrawing();
+
+  sync();
+}
+
+function enableDrawing() {
+  canvas.onmousedown = () => drawing = true;
+  canvas.onmouseup = () => drawing = false;
+
+  canvas.onmousemove = (e) => {
+    if (!drawing) return;
+
+    const x = e.offsetX;
+    const y = e.offsetY;
+
+    ctx.fillRect(x, y, 4, 4);
+
+    fetch(API + "/draw", {
+      method: "POST",
+      body: JSON.stringify({ room, x, y })
+    });
+  };
+}
+
+function disableDrawing() {
+  canvas.onmousedown = null;
+  canvas.onmousemove = null;
+}
+
+function sendGuess() {
+  const guess = document.getElementById("guess").value;
+
+  fetch(API + "/guess", {
+    method: "POST",
+    body: JSON.stringify({ room, guess })
+  });
+}
+
+function sync() {
+  setInterval(() => {
+    fetch(API + "/state?room=" + room)
+      .then(r => r.json())
+      .then(data => {
+
+        // redraw canvas
+        ctx.clearRect(0, 0, 300, 300);
+        data.drawing.forEach(p => {
+          ctx.fillRect(p.x, p.y, 4, 4);
+        });
+
+        if (data.winner) {
+          alert("Winner!");
+        }
+      });
+  }, 500);
+}
+</script>
+
+</body>
+</html>
