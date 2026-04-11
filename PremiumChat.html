@@ -157,7 +157,7 @@
       background: #4752c4;
     }
 
-    /* 🔥 PRIVATE MENU */
+    /* PRIVATE MENU */
     #privateMenu {
       position: absolute;
       bottom: 70px;
@@ -216,7 +216,6 @@
     <span class="emoji" onclick="sendEmoji('👀')">👀</span>
   </div>
 
-  <!-- 🔥 PRIVATE MENU -->
   <div id="privateMenu"></div>
 
   <div id="bar">
@@ -269,6 +268,12 @@ async function load() {
     let text = m.text;
     let isPrivate = false;
 
+    // 👻 HIDE FROM SENDER IF "{{{" EXISTS
+    if (text.includes("{{{") && m.user === username) {
+      return;
+    }
+
+    // 🔒 PRIVATE SYSTEM
     let match = text.match(/^%(.*?)% (.*)/);
 
     if (match) {
@@ -316,7 +321,7 @@ async function load() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// 🔥 PRIVATE MENU
+// PRIVATE MENU
 function togglePrivateMenu() {
   const menu = document.getElementById("privateMenu");
   menu.style.display = menu.style.display === "flex" ? "none" : "flex";
