@@ -54,17 +54,17 @@
 
         <div class="balance-panel">
           <p class="balance-label">Available Credits</p>
-          <h3>2,480</h3>
+          <h3 id="credits-value">Loading...</h3>
           <p class="balance-note">Updated from your Premium Chat activity</p>
 
           <div class="balance-stats">
             <div class="stat-box">
-              <span>Earned Today</span>
-              <strong>+120</strong>
+              <span>Source</span>
+              <strong>Cloudflare KV</strong>
             </div>
             <div class="stat-box">
-              <span>This Week</span>
-              <strong>+640</strong>
+              <span>Binding</span>
+              <strong>Wallet</strong>
             </div>
           </div>
         </div>
@@ -80,15 +80,15 @@
           <div class="summary-list">
             <div class="summary-row">
               <span>Current Balance</span>
-              <strong>2,480 credits</strong>
+              <strong id="summary-credits">Loading...</strong>
             </div>
             <div class="summary-row">
               <span>Total Earned</span>
-              <strong>8,950 credits</strong>
+              <strong>Not implemented</strong>
             </div>
             <div class="summary-row">
               <span>Total Used</span>
-              <strong>6,470 credits</strong>
+              <strong>Not implemented</strong>
             </div>
             <div class="summary-row">
               <span>Status</span>
@@ -148,38 +148,46 @@
         <div class="activity-list">
           <div class="activity-item">
             <div>
-              <h4>Premium Chat message reward</h4>
-              <p>Earned from active messaging</p>
+              <h4>Current wallet value</h4>
+              <p>Loaded from Cloudflare KV</p>
             </div>
-            <span class="amount plus">+40</span>
-          </div>
-
-          <div class="activity-item">
-            <div>
-              <h4>Premium Chat message reward</h4>
-              <p>Earned from active messaging</p>
-            </div>
-            <span class="amount plus">+25</span>
-          </div>
-
-          <div class="activity-item">
-            <div>
-              <h4>Feature unlock</h4>
-              <p>Used credits for premium access</p>
-            </div>
-            <span class="amount minus">-120</span>
-          </div>
-
-          <div class="activity-item">
-            <div>
-              <h4>Premium Chat message reward</h4>
-              <p>Earned from active messaging</p>
-            </div>
-            <span class="amount plus">+55</span>
+            <span class="amount plus" id="activity-credits">Loading...</span>
           </div>
         </div>
       </section>
     </main>
   </div>
+
+  <script>
+    async function loadCredits() {
+      try {
+        const response = await fetch("/api/credits", {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load credits");
+        }
+
+        const data = await response.json();
+        const credits = Number(data.credits ?? 0);
+        const formatted = credits.toLocaleString();
+
+        document.getElementById("credits-value").textContent = formatted;
+        document.getElementById("summary-credits").textContent = formatted + " credits";
+        document.getElementById("activity-credits").textContent = "+" + formatted;
+      } catch (error) {
+        document.getElementById("credits-value").textContent = "Error";
+        document.getElementById("summary-credits").textContent = "Error";
+        document.getElementById("activity-credits").textContent = "Error";
+        console.error(error);
+      }
+    }
+
+    loadCredits();
+  </script>
 </body>
 </html>
