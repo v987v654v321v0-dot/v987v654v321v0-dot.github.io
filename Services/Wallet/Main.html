@@ -3,154 +3,183 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ultra Nice Template</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <title>Premium Wallet</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="bg-orb orb-1"></div>
-  <div class="bg-orb orb-2"></div>
-  <div class="bg-grid"></div>
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
 
-  <header class="site-header">
-    <div class="container nav">
-      <div class="logo">Nova</div>
-      <nav class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <a href="#" class="btn btn-small">Get Started</a>
-    </div>
-  </header>
-
-  <main>
-    <section class="hero container">
-      <div class="hero-content">
-        <span class="eyebrow">Premium HTML Template</span>
-        <h1>Build something that looks stunning from the first second.</h1>
-        <p class="hero-text">
-          A modern, elegant starter template with beautiful spacing, layered
-          backgrounds, polished cards, and a strong visual hierarchy.
-        </p>
-        <div class="hero-actions">
-          <a href="#" class="btn">Start Now</a>
-          <a href="#" class="btn btn-secondary">View Demo</a>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">P</div>
+        <div>
+          <h1>Premium Wallet</h1>
+          <p>Your credits dashboard</p>
         </div>
       </div>
 
-      <div class="hero-card">
-        <div class="glass-card">
-          <p class="mini-label">Live Preview</p>
-          <h3>Beautiful by default</h3>
+      <nav class="sidebar-nav">
+        <a href="#wallet" class="nav-link active">Wallet</a>
+        <a href="#earn" class="nav-link">Earn Credits</a>
+        <a href="#activity" class="nav-link">Activity</a>
+      </nav>
+
+      <div class="sidebar-card">
+        <span class="mini-title">Tip</span>
+        <h3>Grow your balance</h3>
+        <p>
+          Send messages in <strong>Premium Chat</strong> to earn more credits and
+          build your balance over time.
+        </p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section id="wallet" class="hero-card">
+        <div class="hero-left">
+          <span class="badge">Wallet Overview</span>
+          <h2>Check your credits and track your Premium Chat rewards.</h2>
           <p>
-            Designed with a soft premium aesthetic, strong typography,
-            rounded surfaces, and subtle glow effects.
+            A clean wallet layout to show available credits, recent rewards,
+            and the easiest way to earn more.
           </p>
-          <div class="stats">
-            <div class="stat">
-              <strong>100%</strong>
-              <span>Responsive</span>
+
+          <div class="hero-actions">
+            <a href="#earn" class="btn btn-primary">How to Earn</a>
+            <a href="#activity" class="btn btn-secondary">View Activity</a>
+          </div>
+        </div>
+
+        <div class="balance-panel">
+          <p class="balance-label">Available Credits</p>
+          <h3>2,480</h3>
+          <p class="balance-note">Updated from your Premium Chat activity</p>
+
+          <div class="balance-stats">
+            <div class="stat-box">
+              <span>Earned Today</span>
+              <strong>+120</strong>
             </div>
-            <div class="stat">
-              <strong>Fast</strong>
-              <span>Clean CSS</span>
-            </div>
-            <div class="stat">
-              <strong>Modern</strong>
-              <span>UI Style</span>
+            <div class="stat-box">
+              <span>This Week</span>
+              <strong>+640</strong>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section id="features" class="section container">
-      <div class="section-heading">
-        <span class="eyebrow">Features</span>
-        <h2>Everything you need for a classy landing page</h2>
-        <p>
-          This template gives you a strong design foundation with minimal effort.
-        </p>
-      </div>
+      <section class="content-grid">
+        <div class="card">
+          <div class="card-head">
+            <span class="section-tag">Balance</span>
+            <h3>Wallet Summary</h3>
+          </div>
 
-      <div class="card-grid">
-        <article class="feature-card">
-          <div class="icon">✦</div>
-          <h3>Elegant Layout</h3>
-          <p>
-            Balanced sections, modern alignment, and refined spacing throughout.
-          </p>
-        </article>
-
-        <article class="feature-card">
-          <div class="icon">⚡</div>
-          <h3>Fast to Customize</h3>
-          <p>
-            Swap colors, text, and content quickly without fighting the layout.
-          </p>
-        </article>
-
-        <article class="feature-card">
-          <div class="icon">◌</div>
-          <h3>Responsive Design</h3>
-          <p>
-            Looks great across desktop, tablet, and mobile screen sizes.
-          </p>
-        </article>
-      </div>
-    </section>
-
-    <section id="about" class="section container">
-      <div class="split-layout">
-        <div class="panel">
-          <span class="eyebrow">About</span>
-          <h2>Designed to feel clean, expensive, and modern.</h2>
-          <p>
-            The visual style combines soft gradients, translucent surfaces,
-            subtle shadows, and crisp typography to create a high-end look.
-          </p>
+          <div class="summary-list">
+            <div class="summary-row">
+              <span>Current Balance</span>
+              <strong>2,480 credits</strong>
+            </div>
+            <div class="summary-row">
+              <span>Total Earned</span>
+              <strong>8,950 credits</strong>
+            </div>
+            <div class="summary-row">
+              <span>Total Used</span>
+              <strong>6,470 credits</strong>
+            </div>
+            <div class="summary-row">
+              <span>Status</span>
+              <strong class="good">Premium Active</strong>
+            </div>
+          </div>
         </div>
 
-        <div class="panel panel-accent">
-          <h3>Why it works</h3>
-          <ul class="nice-list">
-            <li>Strong typographic hierarchy</li>
-            <li>Soft layered backgrounds</li>
-            <li>Minimal but expressive UI elements</li>
-            <li>Great default spacing and rhythm</li>
-          </ul>
+        <div id="earn" class="card">
+          <div class="card-head">
+            <span class="section-tag">Earn Credits</span>
+            <h3>How to earn credits</h3>
+          </div>
+
+          <div class="earn-highlight">
+            <h4>You earn credits by sending messages in Premium Chat.</h4>
+            <p>
+              The more you participate in Premium Chat, the more credits you can
+              collect. Your wallet updates as your chat activity grows.
+            </p>
+          </div>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <div>
+                <h4>Open Premium Chat</h4>
+                <p>Start chatting in the Premium Chat area.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">2</div>
+              <div>
+                <h4>Send messages</h4>
+                <p>Each message you send helps you earn credits.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">3</div>
+              <div>
+                <h4>Check your wallet</h4>
+                <p>Your updated balance appears in your wallet dashboard.</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="section container">
-      <div class="cta-box">
-        <span class="eyebrow">Ready?</span>
-        <h2>Launch your next page with style.</h2>
-        <p>
-          Use this as a portfolio homepage, startup landing page, product intro,
-          or personal website foundation.
-        </p>
-        <a href="#" class="btn">Create Something Great</a>
-      </div>
-    </section>
-  </main>
+      <section id="activity" class="card wide-card">
+        <div class="card-head">
+          <span class="section-tag">Recent Activity</span>
+          <h3>Latest credit history</h3>
+        </div>
 
-  <footer id="contact" class="site-footer">
-    <div class="container footer-content">
-      <p>© 2026 Nova. Crafted with style.</p>
-      <div class="footer-links">
-        <a href="#">Twitter</a>
-        <a href="#">Instagram</a>
-        <a href="#">Dribbble</a>
-      </div>
-    </div>
-  </footer>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div>
+              <h4>Premium Chat message reward</h4>
+              <p>Earned from active messaging</p>
+            </div>
+            <span class="amount plus">+40</span>
+          </div>
+
+          <div class="activity-item">
+            <div>
+              <h4>Premium Chat message reward</h4>
+              <p>Earned from active messaging</p>
+            </div>
+            <span class="amount plus">+25</span>
+          </div>
+
+          <div class="activity-item">
+            <div>
+              <h4>Feature unlock</h4>
+              <p>Used credits for premium access</p>
+            </div>
+            <span class="amount minus">-120</span>
+          </div>
+
+          <div class="activity-item">
+            <div>
+              <h4>Premium Chat message reward</h4>
+              <p>Earned from active messaging</p>
+            </div>
+            <span class="amount plus">+55</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
