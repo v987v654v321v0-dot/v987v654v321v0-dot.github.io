@@ -433,6 +433,8 @@ let users = new Set();
 let profileCache = {};
 let selectedProfilePic = null;
 let lastLoadedMessages = [];
+let lastDataSignature = null;
+let isFirstLoad = true;
 
 if (!username) {
   window.location.href = "https://v987v654v321v0-dot.github.io/news/main";
@@ -449,7 +451,7 @@ function go(url) {
 
 function applyFilter() {
   activeFilter = document.getElementById("filterInput").value.trim();
-  load();
+  renderChat();
 }
 
 function formatText(text) {
@@ -558,7 +560,7 @@ async function saveProfile() {
   };
 
   closeProfileMenu();
-  load();
+  renderChat();
 }
 
 function getVisibleRecentMessagesForUser(user) {
@@ -635,6 +637,109 @@ function hideUserProfilePopup() {
   document.getElementById("userProfilePopup").style.display = "none";
 }
 
+function processVisibleMessages(data) {
+  const visibleMessages = [];
+  const nextUsers = new Set();
+
+  for (const m of data) {
+    nextUsers.add(m.user);
+
+    let text = m.text;
+    let isPrivate = false;
+    let visible = true;
+
+    if (text.includes("{{{") && m.user === username) {
+      visible = false;
+    }
+
+    if (!visible) continue;
+
+    const match = text.match(/^%(.*?)% (.*)/);
+
+    if (match) {
+      const targetUser = match[1].trim();
+      const actualMessage = match[2];
+      isPrivate = true;
+
+      if (
+        username !== targetUser &&
+        username !== m.user &&
+        username !== "admin-account"
+      ) {
+        continue;
+      }
+
+      if (username === "admin-account") {
+        text = `<i style="color:#f04747;">(private → ${targetUser})</i>${actualMessage}`;
+      } else if (username === targetUser) {
+        text = `<i style="color:#43b581;">(private to you)</i>${actualMessage}`;
+      } else {
+        text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${actualMessage}`;
+      }
+    }
+
+    if (activeFilter && m.user !== activeFilter) continue;
+
+    visibleMessages.push({
+      original: m,
+      displayText: text,
+      isPrivate
+    });
+  }
+
+  users = nextUsers;
+  lastLoadedMessages = visibleMessages.map(item => ({
+    user: item.original.user,
+    text: item.original.text,
+    time: item.original.time
+  }));
+
+  return visibleMessages;
+}
+
+async function renderChat() {
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+
+  const visibleMessages = processVisibleMessages(window.currentChatData || []);
+
+  for (const item of visibleMessages) {
+    const m = item.original;
+    const profile = await fetchProfile(m.user);
+    const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
+
+    const div = document.createElement("div");
+    div.className = "msg";
+    if (item.isPrivate) div.classList.add("private");
+
+    const time = new Date(m.time).toLocaleTimeString();
+
+    div.innerHTML = `
+      <img class="avatar" src="${pic}" onerror="this.src='${DEFAULT_PROFILE_PIC}'">
+      <div class="message-body">
+        <span class="user">${escapeHtml(m.user)}</span>
+        <span class="time">[${time}]</span>
+        <div>${formatText(item.displayText)}</div>
+      </div>
+    `;
+
+    const avatar = div.querySelector(".avatar");
+    avatar.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openUserProfilePopup(m.user, avatar);
+    });
+
+    chat.appendChild(div);
+  }
+
+  renderUserMenu();
+
+  if (isFirstLoad) {
+    chat.scrollTop = chat.scrollHeight;
+    isFirstLoad = false;
+  }
+}
+
 async function load() {
   let res;
 
@@ -662,86 +767,15 @@ async function load() {
 
   lastMessageCount = data.length;
 
-  const chat = document.getElementById("chat");
-  chat.innerHTML = "";
-  users.clear();
-  lastLoadedMessages = [];
+  const newSignature = JSON.stringify(data);
 
-  for (const m of data) {
-    users.add(m.user);
-
-    let text = m.text;
-    let isPrivate = false;
-    let visible = true;
-
-    if (text.includes("{{{") && m.user === username) {
-      visible = false;
-    }
-
-    if (!visible) continue;
-
-    const match = text.match(/^%(.*?)% (.*)/);
-
-    if (match) {
-      const targetUser = match[1].trim();
-      const actualMessage = match[2];
-
-      isPrivate = true;
-
-      if (
-        username !== targetUser &&
-        username !== m.user &&
-        username !== "admin-account"
-      ) {
-        continue;
-      }
-
-      if (username === "admin-account") {
-        text = `<i style="color:#f04747;">(private → ${targetUser})</i>${actualMessage}`;
-      } else if (username === targetUser) {
-        text = `<i style="color:#43b581;">(private to you)</i>${actualMessage}`;
-      } else {
-        text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${actualMessage}`;
-      }
-    }
-
-    if (activeFilter && m.user !== activeFilter) continue;
-
-    lastLoadedMessages.push({
-      user: m.user,
-      text: m.text,
-      time: m.time
-    });
-
-    const profile = await fetchProfile(m.user);
-    const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
-
-    const div = document.createElement("div");
-    div.className = "msg";
-    if (isPrivate) div.classList.add("private");
-
-    const time = new Date(m.time).toLocaleTimeString();
-
-    div.innerHTML = `
-      <img class="avatar" src="${pic}" onerror="this.src='${DEFAULT_PROFILE_PIC}'">
-      <div class="message-body">
-        <span class="user">${escapeHtml(m.user)}</span>
-        <span class="time">[${time}]</span>
-        <div>${formatText(text)}</div>
-      </div>
-    `;
-
-    const avatar = div.querySelector(".avatar");
-    avatar.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openUserProfilePopup(m.user, avatar);
-    });
-
-    chat.appendChild(div);
+  if (newSignature === lastDataSignature) {
+    return;
   }
 
-  renderUserMenu();
-  chat.scrollTop = chat.scrollHeight;
+  lastDataSignature = newSignature;
+  window.currentChatData = data;
+  await renderChat();
 }
 
 function togglePrivateMenu(e) {
