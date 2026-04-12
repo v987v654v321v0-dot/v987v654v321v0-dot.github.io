@@ -435,6 +435,8 @@ let selectedProfilePic = null;
 let lastLoadedMessages = [];
 let lastDataSignature = null;
 let isFirstLoad = true;
+let currentChatData = [];
+let activeLoadToken = 0;
 
 if (!username) {
   window.location.href = "https://v987v654v321v0-dot.github.io/news/main";
@@ -476,7 +478,7 @@ async function fetchProfile(user) {
     const res = await fetch(ACCOUNT_API + "?user=" + encodeURIComponent(user));
     const data = await res.json();
     profileCache[user] = data || {};
-    return profileCache[user];
+    return data || {};
   } catch {
     profileCache[user] = {};
     return {};
@@ -508,6 +510,7 @@ function renderProfileChoices() {
     const img = document.createElement("img");
     img.src = pic;
     img.className = "profile-choice";
+
     if (selectedProfilePic === pic) {
       img.classList.add("selected");
     }
@@ -697,20 +700,25 @@ function processVisibleMessages(data) {
   return visibleMessages;
 }
 
-async function renderChat() {
-  const chat = document.getElementById("chat");
-  chat.innerHTML = "";
-
-  const visibleMessages = processVisibleMessages(window.currentChatData || []);
+async function renderChat(loadToken = activeLoadToken) {
+  const visibleMessages = processVisibleMessages(currentChatData);
+  const fragment = document.createDocumentFragment();
 
   for (const item of visibleMessages) {
+    if (loadToken !== activeLoadToken) return;
+
     const m = item.original;
     const profile = await fetchProfile(m.user);
-    const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
 
+    if (loadToken !== activeLoadToken) return;
+
+    const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
     const div = document.createElement("div");
     div.className = "msg";
-    if (item.isPrivate) div.classList.add("private");
+
+    if (item.isPrivate) {
+      div.classList.add("private");
+    }
 
     const time = new Date(m.time).toLocaleTimeString();
 
@@ -729,8 +737,14 @@ async function renderChat() {
       openUserProfilePopup(m.user, avatar);
     });
 
-    chat.appendChild(div);
+    fragment.appendChild(div);
   }
+
+  if (loadToken !== activeLoadToken) return;
+
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+  chat.appendChild(fragment);
 
   renderUserMenu();
 
@@ -741,6 +755,8 @@ async function renderChat() {
 }
 
 async function load() {
+  const loadToken = ++activeLoadToken;
+
   let res;
 
   try {
@@ -750,12 +766,22 @@ async function load() {
     return;
   }
 
+  if (loadToken !== activeLoadToken) return;
+
   if (!res.ok) {
     console.error("Chat API error:", res.status);
     return;
   }
 
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    console.error("Invalid JSON:", err);
+    return;
+  }
+
+  if (loadToken !== activeLoadToken) return;
 
   if (
     notifyEnabled &&
@@ -774,8 +800,8 @@ async function load() {
   }
 
   lastDataSignature = newSignature;
-  window.currentChatData = data;
-  await renderChat();
+  currentChatData = data;
+  await renderChat(loadToken);
 }
 
 function togglePrivateMenu(e) {
@@ -807,7 +833,6 @@ function renderUserMenu() {
 function sendPrivate(target) {
   const input = document.getElementById("msg");
   if (!input.value) return;
-
   send(`%${target}% ${input.value}`);
 }
 
