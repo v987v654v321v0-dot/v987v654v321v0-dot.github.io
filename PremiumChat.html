@@ -106,6 +106,7 @@
       object-fit: cover;
       background: #383a40;
       flex-shrink: 0;
+      cursor: pointer;
     }
 
     .message-body {
@@ -116,13 +117,6 @@
     .user {
       font-weight: bold;
       color: #5865f2;
-    }
-
-    .desc {
-      font-size: 11px;
-      opacity: 0.7;
-      margin-top: 2px;
-      margin-bottom: 4px;
     }
 
     .time {
@@ -183,7 +177,8 @@
     }
 
     #privateMenu,
-    #profileMenu {
+    #profileMenu,
+    #userProfilePopup {
       position: absolute;
       left: 220px;
       background: #2b2d31;
@@ -207,6 +202,12 @@
     #profileMenu {
       top: 20px;
       width: 280px;
+    }
+
+    #userProfilePopup {
+      width: 300px;
+      left: auto;
+      top: auto;
     }
 
     .user-option {
@@ -269,6 +270,55 @@
     .profile-actions button:hover {
       background: #4752c4;
     }
+
+    .popup-header {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .popup-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #383a40;
+      flex-shrink: 0;
+    }
+
+    .popup-name {
+      font-weight: bold;
+      color: #5865f2;
+      font-size: 16px;
+    }
+
+    .popup-desc {
+      font-size: 13px;
+      opacity: 0.85;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .recent-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .recent-message {
+      background: #383a40;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 13px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .recent-empty {
+      opacity: 0.7;
+      font-size: 13px;
+    }
   </style>
 </head>
 
@@ -319,6 +369,8 @@
     </div>
   </div>
 
+  <div id="userProfilePopup"></div>
+
   <div id="bar">
     <input id="msg" placeholder="Type message..." />
     <button class="send" onclick="send()">Send</button>
@@ -350,6 +402,7 @@ let activeFilter = "";
 let users = new Set();
 let profileCache = {};
 let selectedProfilePic = null;
+let lastLoadedMessages = [];
 
 if (!username) {
   username = prompt("Enter your username:");
@@ -449,6 +502,86 @@ async function saveProfile() {
   load();
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function getVisibleRecentMessagesForUser(user) {
+  const result = [];
+
+  for (let i = lastLoadedMessages.length - 1; i >= 0; i--) {
+    const m = lastLoadedMessages[i];
+    if (m.user !== user) continue;
+    result.push(m);
+    if (result.length >= 5) break;
+  }
+
+  return result;
+}
+
+async function openUserProfilePopup(user, anchorEl) {
+  const popup = document.getElementById("userProfilePopup");
+  const profile = await fetchProfile(user);
+  const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
+  const desc = profile.description || "No description set.";
+  const recent = getVisibleRecentMessagesForUser(user);
+
+  popup.innerHTML = `
+    <div class="popup-header">
+      <img class="popup-avatar" src="${pic}" onerror="this.src='${DEFAULT_PROFILE_PIC}'">
+      <div>
+        <div class="popup-name">${escapeHtml(user)}</div>
+      </div>
+    </div>
+    <div class="profile-label">Description</div>
+    <div class="popup-desc">${escapeHtml(desc)}</div>
+    <div class="profile-label">Recent messages</div>
+    <div class="recent-messages">
+      ${
+        recent.length
+          ? recent.map(m => `<div class="recent-message">${formatText(escapeHtml(m.text))}</div>`).join("")
+          : `<div class="recent-empty">No recent messages.</div>`
+      }
+    </div>
+  `;
+
+  popup.style.display = "flex";
+
+  const rect = anchorEl.getBoundingClientRect();
+  const mainRect = document.getElementById("main").getBoundingClientRect();
+
+  let left = rect.right - mainRect.left + 10;
+  let top = rect.top - mainRect.top;
+
+  popup.style.left = left + "px";
+  popup.style.top = top + "px";
+
+  requestAnimationFrame(() => {
+    const popupRect = popup.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (popupRect.right > viewportWidth - 10) {
+      left = rect.left - mainRect.left - popupRect.width - 10;
+      popup.style.left = Math.max(10, left) + "px";
+    }
+
+    if (popupRect.bottom > viewportHeight - 10) {
+      top = Math.max(10, viewportHeight - popupRect.height - 10 - mainRect.top);
+      popup.style.top = top + "px";
+    }
+  });
+}
+
+function hideUserProfilePopup() {
+  document.getElementById("userProfilePopup").style.display = "none";
+}
+
 async function load() {
   const res = await fetch(API);
   const data = await res.json();
@@ -466,14 +599,20 @@ async function load() {
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
   users.clear();
+  lastLoadedMessages = [];
 
   for (const m of data) {
     users.add(m.user);
 
     let text = m.text;
     let isPrivate = false;
+    let visible = true;
 
-    if (text.includes("{{{") && m.user === username) continue;
+    if (text.includes("{{{") && m.user === username) {
+      visible = false;
+    }
+
+    if (!visible) continue;
 
     const match = text.match(/^%(.*?)% (.*)/);
 
@@ -502,9 +641,14 @@ async function load() {
 
     if (activeFilter && m.user !== activeFilter) continue;
 
+    lastLoadedMessages.push({
+      user: m.user,
+      text: m.text,
+      time: m.time
+    });
+
     const profile = await fetchProfile(m.user);
     const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
-    const desc = profile.description || "";
 
     const div = document.createElement("div");
     div.className = "msg";
@@ -515,12 +659,17 @@ async function load() {
     div.innerHTML = `
       <img class="avatar" src="${pic}" onerror="this.src='${DEFAULT_PROFILE_PIC}'">
       <div class="message-body">
-        <span class="user" title="${desc.replace(/"/g, "&quot;")}">${m.user}</span>
+        <span class="user">${escapeHtml(m.user)}</span>
         <span class="time">[${time}]</span>
-        ${desc ? `<div class="desc">${desc}</div>` : ""}
         <div>${formatText(text)}</div>
       </div>
     `;
+
+    const avatar = div.querySelector(".avatar");
+    avatar.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openUserProfilePopup(m.user, avatar);
+    });
 
     chat.appendChild(div);
   }
@@ -586,6 +735,24 @@ function sendEmoji(e) {
 
 document.getElementById("msg").addEventListener("keypress", e => {
   if (e.key === "Enter") send();
+});
+
+document.addEventListener("click", (e) => {
+  const popup = document.getElementById("userProfilePopup");
+  const profileMenu = document.getElementById("profileMenu");
+  const privateMenu = document.getElementById("privateMenu");
+
+  if (!popup.contains(e.target)) {
+    hideUserProfilePopup();
+  }
+
+  if (!profileMenu.contains(e.target) && !e.target.closest('button[onclick="toggleProfileMenu()"]')) {
+    profileMenu.style.display = "none";
+  }
+
+  if (!privateMenu.contains(e.target) && !e.target.closest('button[onclick="togglePrivateMenu()"]')) {
+    privateMenu.style.display = "none";
+  }
 });
 
 setInterval(load, 2000);
