@@ -517,6 +517,10 @@ function getVisibleRecentMessagesForUser(user) {
   for (let i = lastLoadedMessages.length - 1; i >= 0; i--) {
     const m = lastLoadedMessages[i];
     if (m.user !== user) continue;
+
+    // skip private-format messages like %username% message
+    if (/^%(.*?)% /.test(m.text)) continue;
+
     result.push(m);
     if (result.length >= 5) break;
   }
