@@ -201,7 +201,7 @@
 
     #profileMenu {
       top: 20px;
-      width: 280px;
+      width: 300px;
     }
 
     #userProfilePopup {
@@ -235,10 +235,12 @@
       cursor: pointer;
       border: 2px solid transparent;
       background: #383a40;
+      box-sizing: border-box;
     }
 
     .profile-choice.selected {
       border-color: #5865f2;
+      outline: 2px solid rgba(88,101,242,0.35);
     }
 
     .profile-label {
@@ -319,6 +321,26 @@
       opacity: 0.7;
       font-size: 13px;
     }
+
+    .current-pic-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .current-pic-preview {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #383a40;
+      border: 2px solid #383a40;
+    }
+
+    .current-pic-text {
+      font-size: 12px;
+      opacity: 0.8;
+    }
   </style>
 </head>
 
@@ -329,7 +351,7 @@
   <button class="nav-btn" onclick="go('/news/account.html')">⚙️ Settings</button>
   <button class="nav-btn" onclick="go('https://v987v654v321v0-dot.github.io/ARTGAME.html')">🕹️ Play Guess the Drawing</button>
   <button class="nav-btn" onclick="toggleNotify(event)">🔔 Notify: OFF</button>
-  <button class="nav-btn" onclick="toggleProfileMenu()">👤 Edit Profile</button>
+  <button class="nav-btn" id="editProfileBtn" onclick="toggleProfileMenu(event)">👤 Edit Profile</button>
 </div>
 
 <div id="main">
@@ -357,6 +379,12 @@
   <div id="privateMenu"></div>
 
   <div id="profileMenu">
+    <div class="profile-label">Current profile picture</div>
+    <div class="current-pic-row">
+      <img id="currentPicPreview" class="current-pic-preview" src="user.png" onerror="this.src='user.png'">
+      <div class="current-pic-text" id="currentPicText">No picture selected</div>
+    </div>
+
     <div class="profile-label">Choose profile picture</div>
     <div id="profilePicGrid" class="profile-pic-grid"></div>
 
@@ -365,7 +393,7 @@
 
     <div class="profile-actions">
       <button onclick="saveProfile()">Save</button>
-      <button onclick="toggleProfileMenu()">Close</button>
+      <button onclick="closeProfileMenu()">Close</button>
     </div>
   </div>
 
@@ -374,7 +402,7 @@
   <div id="bar">
     <input id="msg" placeholder="Type message..." />
     <button class="send" onclick="send()">Send</button>
-    <button class="send" onclick="togglePrivateMenu()">Private</button>
+    <button class="send" id="privateBtn" onclick="togglePrivateMenu(event)">Private</button>
   </div>
 
 </div>
@@ -390,9 +418,7 @@ const PROFILE_PICS = [
   "nuke.jpeg",
   "sushi.jpeg",
   "burger.jpeg",
-  "background.jpg",
-  "enstein.jpeg",
-  "warrior.jpeg"
+  "background.jpg"
 ];
 
 const DEFAULT_PROFILE_PIC = "user.png";
@@ -431,6 +457,15 @@ function formatText(text) {
     .replace(/#(.*?)#/g, "<i>$1</i>");
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 async function fetchProfile(user) {
   if (profileCache[user]) return profileCache[user];
 
@@ -447,9 +482,19 @@ async function fetchProfile(user) {
 
 async function fetchMyProfile() {
   const mine = await fetchProfile(username);
-  selectedProfilePic = mine.profilePic || null;
+  selectedProfilePic = mine.profilePic || "";
   document.getElementById("descInput").value = mine.description || "";
   renderProfileChoices();
+  renderCurrentPicPreview();
+}
+
+function renderCurrentPicPreview() {
+  const preview = document.getElementById("currentPicPreview");
+  const text = document.getElementById("currentPicText");
+  const pic = selectedProfilePic || DEFAULT_PROFILE_PIC;
+
+  preview.src = pic;
+  text.textContent = selectedProfilePic || "No picture selected (using user.png)";
 }
 
 function renderProfileChoices() {
@@ -463,23 +508,34 @@ function renderProfileChoices() {
     if (selectedProfilePic === pic) {
       img.classList.add("selected");
     }
-    img.onclick = () => {
+
+    img.addEventListener("click", (e) => {
+      e.stopPropagation();
       selectedProfilePic = pic;
       renderProfileChoices();
-    };
+      renderCurrentPicPreview();
+    });
+
     grid.appendChild(img);
   });
 }
 
-function toggleProfileMenu() {
+function toggleProfileMenu(e) {
+  if (e) e.stopPropagation();
+
   const menu = document.getElementById("profileMenu");
   const isOpen = menu.style.display === "flex";
 
-  menu.style.display = isOpen ? "none" : "flex";
-
-  if (!isOpen) {
+  if (isOpen) {
+    closeProfileMenu();
+  } else {
+    menu.style.display = "flex";
     fetchMyProfile();
   }
+}
+
+function closeProfileMenu() {
+  document.getElementById("profileMenu").style.display = "none";
 }
 
 async function saveProfile() {
@@ -500,17 +556,8 @@ async function saveProfile() {
     description: description
   };
 
-  document.getElementById("profileMenu").style.display = "none";
+  closeProfileMenu();
   load();
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }
 
 function getVisibleRecentMessagesForUser(user) {
@@ -519,9 +566,8 @@ function getVisibleRecentMessagesForUser(user) {
   for (let i = lastLoadedMessages.length - 1; i >= 0; i--) {
     const m = lastLoadedMessages[i];
     if (m.user !== user) continue;
-
-    // skip private-format messages like %username% message
     if (/^%(.*?)% /.test(m.text)) continue;
+    if (m.text.includes("{{{")) continue;
 
     result.push(m);
     if (result.length >= 5) break;
@@ -551,7 +597,7 @@ async function openUserProfilePopup(user, anchorEl) {
       ${
         recent.length
           ? recent.map(m => `<div class="recent-message">${formatText(escapeHtml(m.text))}</div>`).join("")
-          : `<div class="recent-empty">No recent messages.</div>`
+          : `<div class="recent-empty">No recent public messages.</div>`
       }
     </div>
   `;
@@ -589,7 +635,20 @@ function hideUserProfilePopup() {
 }
 
 async function load() {
-  const res = await fetch(API);
+  let res;
+
+  try {
+    res = await fetch(API);
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    return;
+  }
+
+  if (!res.ok) {
+    console.error("Chat API error:", res.status);
+    return;
+  }
+
   const data = await res.json();
 
   if (
@@ -684,7 +743,8 @@ async function load() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function togglePrivateMenu() {
+function togglePrivateMenu(e) {
+  if (e) e.stopPropagation();
   const menu = document.getElementById("privateMenu");
   menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
@@ -747,16 +807,26 @@ document.addEventListener("click", (e) => {
   const popup = document.getElementById("userProfilePopup");
   const profileMenu = document.getElementById("profileMenu");
   const privateMenu = document.getElementById("privateMenu");
+  const editProfileBtn = document.getElementById("editProfileBtn");
+  const privateBtn = document.getElementById("privateBtn");
 
-  if (!popup.contains(e.target)) {
+  if (popup.style.display === "flex" && !popup.contains(e.target)) {
     hideUserProfilePopup();
   }
 
-  if (!profileMenu.contains(e.target) && !e.target.closest('button[onclick="toggleProfileMenu()"]')) {
-    profileMenu.style.display = "none";
+  if (
+    profileMenu.style.display === "flex" &&
+    !profileMenu.contains(e.target) &&
+    !editProfileBtn.contains(e.target)
+  ) {
+    closeProfileMenu();
   }
 
-  if (!privateMenu.contains(e.target) && !e.target.closest('button[onclick="togglePrivateMenu()"]')) {
+  if (
+    privateMenu.style.display === "flex" &&
+    !privateMenu.contains(e.target) &&
+    !privateBtn.contains(e.target)
+  ) {
     privateMenu.style.display = "none";
   }
 });
