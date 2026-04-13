@@ -139,6 +139,19 @@
         </div>
       </section>
 
+      <section class="card wide-card">
+        <div class="card-head">
+          <span class="section-tag">Login</span>
+          <h3>Load your wallet</h3>
+        </div>
+
+        <div style="display: grid; gap: 12px;">
+          <input id="username" type="text" placeholder="Username" />
+          <input id="password" type="password" placeholder="Password" />
+          <button id="load-wallet-btn" class="btn btn-primary" type="button">Load Wallet</button>
+        </div>
+      </section>
+
       <section id="activity" class="card wide-card">
         <div class="card-head">
           <span class="section-tag">Recent Activity</span>
@@ -159,20 +172,36 @@
   </div>
 
   <script>
-    async function loadCredits() {
-      try {
-        const response = await fetch("https://quiet-resonance.v987v654v321v0.workers.dev/api/credits", {
-          method: "GET",
-          headers: {
-            "Accept": "application/json"
-          }
-        });
+    const WORKER_URL = "https://quiet-resonance.v987v654v321v0.workers.dev/";
 
-        if (!response.ok) {
-          throw new Error("Failed to load credits");
-        }
+    async function loadCredits() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!username || !password) {
+        document.getElementById("credits-value").textContent = "Missing login";
+        document.getElementById("summary-credits").textContent = "Missing login";
+        document.getElementById("activity-credits").textContent = "Missing login";
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${WORKER_URL}api/credits?user=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+          {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            }
+          }
+        );
 
         const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Failed to load credits");
+        }
+
         const credits = Number(data.credits ?? 0);
         const formatted = credits.toLocaleString();
 
@@ -187,7 +216,7 @@
       }
     }
 
-    loadCredits();
+    document.getElementById("load-wallet-btn").addEventListener("click", loadCredits);
   </script>
 </body>
 </html>
