@@ -86,6 +86,7 @@
       display: flex;
       gap: 10px;
       align-items: flex-start;
+      position: relative;
     }
 
     .private {
@@ -123,6 +124,27 @@
       font-size: 11px;
       opacity: 0.5;
       margin-left: 6px;
+    }
+
+    .message-actions {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+      align-self: flex-start;
+    }
+
+    .msg-action-btn {
+      background: #383a40;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 14px;
+    }
+
+    .msg-action-btn:hover {
+      background: #5865f2;
     }
 
     #emojiBar {
@@ -473,6 +495,31 @@ function escapeHtml(str) {
     .replaceAll("'", "&#39;");
 }
 
+function shortenMessage(text, max = 15) {
+  const clean = String(text)
+    .replace(/^%(.*?)% /, "")
+    .replace(/{{{.*?}}}/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (clean.length <= max) return clean;
+  return clean.slice(0, max) + "...";
+}
+
+function prepareReply(messageText) {
+  const input = document.getElementById("msg");
+  const shortText = shortenMessage(messageText);
+  input.value = `(replying to "${shortText}") `;
+  input.focus();
+}
+
+function prepareForward(messageText) {
+  const input = document.getElementById("msg");
+  const shortText = shortenMessage(messageText);
+  input.value = `(forwarded "${shortText}") `;
+  input.focus();
+}
+
 async function fetchProfile(user) {
   if (profileCache[user]) return profileCache[user];
 
@@ -731,12 +778,29 @@ async function renderChat(loadToken = activeLoadToken) {
         <span class="time">[${time}]</span>
         <div>${formatText(item.displayText)}</div>
       </div>
+      <div class="message-actions">
+        <button class="msg-action-btn reply-btn" title="Reply">↩</button>
+        <button class="msg-action-btn forward-btn" title="Forward">↪</button>
+      </div>
     `;
 
     const avatar = div.querySelector(".avatar");
     avatar.addEventListener("click", (e) => {
       e.stopPropagation();
       openUserProfilePopup(m.user, avatar);
+    });
+
+    const replyBtn = div.querySelector(".reply-btn");
+    const forwardBtn = div.querySelector(".forward-btn");
+
+    replyBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      prepareReply(m.text);
+    });
+
+    forwardBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      prepareForward(m.text);
     });
 
     fragment.appendChild(div);
