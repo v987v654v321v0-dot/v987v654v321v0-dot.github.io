@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <main class="main-content" style="max-width: 900px; margin: 0 auto; padding: 32px;">
+      <section class="hero-card">
+        <div class="hero-left">
+          <span class="badge">Create Account</span>
+          <h1>Join Premium Chat</h1>
+          <p>
+            Create your account to start chatting, earning credits, and unlocking
+            premium features.
+          </p>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: 24px;">
+        <div class="card-head">
+          <span class="section-tag">Sign Up</span>
+          <h3>Create your new account</h3>
+        </div>
+
+        <div style="display: grid; gap: 12px;">
+          <input id="username" type="text" placeholder="Choose a username" />
+          <input id="password" type="password" placeholder="Choose a password" />
+
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <label style="display: flex; gap: 10px; align-items: center;">
+              <input id="agree-tos" type="checkbox" />
+              <span>I agree to the Terms of Service</span>
+            </label>
+
+            <button id="show-terms-btn" class="btn btn-secondary" type="button">
+              Show Terms
+            </button>
+          </div>
+
+          <div
+            id="terms-dropdown"
+            style="
+              display: none;
+              margin-top: 8px;
+              padding: 18px;
+              border-radius: 16px;
+              background: rgba(255,255,255,0.05);
+              border: 1px solid rgba(255,255,255,0.1);
+              line-height: 1.7;
+            "
+          >
+            <h4 style="margin-top: 0;">Terms of Service</h4>
+            <p>
+              By creating an account, you agree not to abuse the service, bypass
+              restrictions, impersonate others, exploit bugs, or use the platform
+              for spam, harassment, or illegal activity.
+            </p>
+            <p>
+              You understand that account features, wallet balances, plans, and
+              access may be updated, limited, or removed if misuse is detected.
+            </p>
+            <p>
+              You also agree that your account data may be stored to operate the
+              service, including login details, wallet data, and account metadata.
+            </p>
+          </div>
+
+          <button id="create-account-btn" class="btn btn-primary" type="button">
+            Create Account
+          </button>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <div style="width: 100%; height: 16px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.12);">
+            <div id="loading-bar" style="width: 0%; height: 100%; transition: width 0.25s ease;"></div>
+          </div>
+        </div>
+
+        <p id="status-text" style="margin-top: 16px;">Ready to create account.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://signup.v987v654v321v0.workers.dev/";
+
+    const showTermsBtn = document.getElementById("show-terms-btn");
+    const termsDropdown = document.getElementById("terms-dropdown");
+    const createAccountBtn = document.getElementById("create-account-btn");
+    const loadingBar = document.getElementById("loading-bar");
+    const statusText = document.getElementById("status-text");
+
+    function setLoadingPercent(value) {
+      loadingBar.style.width = value + "%";
+    }
+
+    showTermsBtn.addEventListener("click", () => {
+      const isHidden = termsDropdown.style.display === "none" || !termsDropdown.style.display;
+      termsDropdown.style.display = isHidden ? "block" : "none";
+      showTermsBtn.textContent = isHidden ? "Hide Terms" : "Show Terms";
+    });
+
+    async function animateLoading() {
+      setLoadingPercent(12);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      setLoadingPercent(38);
+      await new Promise(resolve => setTimeout(resolve, 180));
+      setLoadingPercent(67);
+      await new Promise(resolve => setTimeout(resolve, 220));
+      setLoadingPercent(90);
+    }
+
+    async function createAccount() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const agreedToTerms = document.getElementById("agree-tos").checked;
+
+      if (!username) {
+        statusText.textContent = "Please enter a username.";
+        return;
+      }
+
+      if (!password) {
+        statusText.textContent = "Please enter a password.";
+        return;
+      }
+
+      if (!agreedToTerms) {
+        statusText.textContent = "You must agree to the Terms of Service.";
+        return;
+      }
+
+      try {
+        createAccountBtn.disabled = true;
+        statusText.textContent = "Creating account...";
+        setLoadingPercent(0);
+
+        const loadingPromise = animateLoading();
+
+        const response = await fetch(`${WORKER_URL}api/create-account`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            user: username,
+            password,
+            agreedToTerms
+          })
+        });
+
+        const data = await response.json();
+        await loadingPromise;
+        setLoadingPercent(100);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Failed to create account");
+        }
+
+        statusText.textContent = "Account created successfully. You can now sign in.";
+      } catch (error) {
+        setLoadingPercent(0);
+        statusText.textContent = error.message || "Failed to create account";
+        console.error(error);
+      } finally {
+        createAccountBtn.disabled = false;
+      }
+    }
+
+    createAccountBtn.addEventListener("click", createAccount);
+  </script>
+</body>
+</html>
