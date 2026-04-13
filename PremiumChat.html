@@ -100,6 +100,22 @@
       font-size: 12px;
     }
 
+    .reply-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #57f287;
+      font-style: italic;
+    }
+
+    .forward-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #faa61a;
+      font-style: italic;
+    }
+
     .avatar {
       width: 38px;
       height: 38px;
@@ -498,6 +514,8 @@ function escapeHtml(str) {
 function shortenMessage(text, max = 15) {
   const clean = String(text)
     .replace(/^%(.*?)% /, "")
+    .replace(/{{reply:(.*?)}}/g, "$1")
+    .replace(/{{forward:(.*?)}}/g, "$1")
     .replace(/{{{.*?}}}/g, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -509,14 +527,14 @@ function shortenMessage(text, max = 15) {
 function prepareReply(messageText) {
   const input = document.getElementById("msg");
   const shortText = shortenMessage(messageText);
-  input.value = `(replying to "${shortText}") `;
+  input.value = `{{reply:${shortText}}} `;
   input.focus();
 }
 
 function prepareForward(messageText) {
   const input = document.getElementById("msg");
   const shortText = shortenMessage(messageText);
-  input.value = `(forwarded "${shortText}") `;
+  input.value = `{{forward:${shortText}}} `;
   input.focus();
 }
 
@@ -699,6 +717,8 @@ function processVisibleMessages(data) {
     let text = m.text;
     let isPrivate = false;
     let visible = true;
+    let replyMeta = "";
+    let forwardMeta = "";
 
     if (text.includes("{{{") && m.user === username) {
       visible = false;
@@ -721,13 +741,35 @@ function processVisibleMessages(data) {
         continue;
       }
 
+      text = actualMessage;
+
       if (username === "admin-account") {
-        text = `<i style="color:#f04747;">(private → ${targetUser})</i>${actualMessage}`;
+        text = `<i style="color:#f04747;">(private → ${targetUser})</i>${text}`;
       } else if (username === targetUser) {
-        text = `<i style="color:#43b581;">(private to you)</i>${actualMessage}`;
+        text = `<i style="color:#43b581;">(private to you)</i>${text}`;
       } else {
-        text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${actualMessage}`;
+        text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${text}`;
       }
+    }
+
+    const replyMatch = text.match(/{{reply:(.*?)}}/);
+    if (replyMatch) {
+      replyMeta = replyMatch[1];
+      text = text.replace(/{{reply:(.*?)}}/, "").trim();
+    }
+
+    const forwardMatch = text.match(/{{forward:(.*?)}}/);
+    if (forwardMatch) {
+      forwardMeta = forwardMatch[1];
+      text = text.replace(/{{forward:(.*?)}}/, "").trim();
+    }
+
+    if (replyMeta) {
+      text = `<span class="reply-label">(replying to "${escapeHtml(replyMeta)}")</span>` + text;
+    }
+
+    if (forwardMeta) {
+      text = `<span class="forward-label">(forwarded "${escapeHtml(forwardMeta)}")</span>` + text;
     }
 
     if (activeFilter && m.user !== activeFilter) continue;
