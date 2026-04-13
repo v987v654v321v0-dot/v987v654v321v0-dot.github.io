@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buy Ultra Plan</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <main class="main-content" style="max-width: 900px; margin: 0 auto; padding: 32px;">
+      <section class="hero-card">
+        <div class="hero-left">
+          <span class="badge">Upgrade</span>
+          <h1>Buy Ultra Plan</h1>
+          <p>
+            Unlock premium chat identity features and better functionality with a
+            one-time purchase of <strong>20 credits</strong>.
+          </p>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: 24px;">
+        <div class="card-head">
+          <span class="section-tag">Why Ultra Plan</span>
+          <h3>Make your profile stand out</h3>
+        </div>
+
+        <div class="summary-list">
+          <div class="summary-row">
+            <span>VIP-only profile pictures</span>
+            <strong>Exclusive identity options</strong>
+          </div>
+          <div class="summary-row">
+            <span>VIP marker next to your name in Chat</span>
+            <strong>Stand out instantly</strong>
+          </div>
+          <div class="summary-row">
+            <span>Access to more chat features and functionality</span>
+            <strong>More tools, more control</strong>
+          </div>
+          <div class="summary-row">
+            <span>Purchase type</span>
+            <strong>One-time purchase</strong>
+          </div>
+          <div class="summary-row">
+            <span>Price</span>
+            <strong>20 credits</strong>
+          </div>
+        </div>
+
+        <div class="earn-highlight" style="margin-top: 20px;">
+          <h4>Why it is worth it</h4>
+          <p>
+            Ultra Plan gives you visible identity upgrades, stronger chat presence,
+            and access to better features in one simple purchase. If you use Premium
+            Chat often, it is a solid upgrade for both style and functionality.
+          </p>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: 24px;">
+        <div class="card-head">
+          <span class="section-tag">Verify account</span>
+          <h3>Confirm your purchase</h3>
+        </div>
+
+        <div style="display: grid; gap: 12px;">
+          <input id="username" type="text" placeholder="Username" />
+          <input id="password" type="password" placeholder="Password" />
+
+          <label style="display: flex; gap: 10px; align-items: center;">
+            <input id="confirm-purchase" type="checkbox" />
+            <span>Are you sure to buy this?</span>
+          </label>
+
+          <button id="buy-btn" class="btn btn-primary" type="button">
+            Buy Ultra Plan for 20 Credits
+          </button>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <div style="width: 100%; height: 16px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.12);">
+            <div id="loading-bar" style="width: 0%; height: 100%; transition: width 0.25s ease;"></div>
+          </div>
+        </div>
+
+        <p id="status-text" style="margin-top: 16px;">Ready to purchase.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://planandtransaction.v987v654v321v0.workers.dev/";
+
+    const buyBtn = document.getElementById("buy-btn");
+    const loadingBar = document.getElementById("loading-bar");
+    const statusText = document.getElementById("status-text");
+
+    function setLoadingPercent(value) {
+      loadingBar.style.width = value + "%";
+    }
+
+    async function animateLoading() {
+      setLoadingPercent(10);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      setLoadingPercent(35);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setLoadingPercent(65);
+      await new Promise(resolve => setTimeout(resolve, 220));
+      setLoadingPercent(90);
+    }
+
+    async function buyUltraPlan() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirmed = document.getElementById("confirm-purchase").checked;
+
+      if (!username || !password) {
+        statusText.textContent = "Please enter username and password.";
+        return;
+      }
+
+      if (!confirmed) {
+        statusText.textContent = "Please confirm that you want to buy this.";
+        return;
+      }
+
+      try {
+        buyBtn.disabled = true;
+        statusText.textContent = "Verifying and processing purchase...";
+        setLoadingPercent(0);
+
+        const loadingPromise = animateLoading();
+
+        const response = await fetch(`${WORKER_URL}api/buy-ultra`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            user: username,
+            password: password
+          })
+        });
+
+        const data = await response.json();
+        await loadingPromise;
+        setLoadingPercent(100);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Purchase failed");
+        }
+
+        statusText.textContent =
+          `Success! Ultra Plan purchased. Remaining credits: ${data.remainingCredits}`;
+      } catch (error) {
+        setLoadingPercent(0);
+        statusText.textContent = error.message || "Purchase failed";
+        console.error(error);
+      } finally {
+        buyBtn.disabled = false;
+      }
+    }
+
+    buyBtn.addEventListener("click", buyUltraPlan);
+  </script>
+</body>
+</html>
