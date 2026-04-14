@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cloud Chat</title>
+  <title>Premium Chat</title>
   <style>
     body {
       margin: 0;
@@ -226,7 +226,7 @@
       display: none;
       flex-direction: column;
       gap: 8px;
-      max-height: 260px;
+      max-height: 320px;
       overflow-y: auto;
       z-index: 999;
       box-shadow: 0 8px 18px rgba(0,0,0,0.35);
@@ -239,7 +239,7 @@
 
     #profileMenu {
       top: 20px;
-      width: 300px;
+      width: 360px;
     }
 
     #userProfilePopup {
@@ -265,20 +265,48 @@
       gap: 8px;
     }
 
-    .profile-choice {
-      width: 56px;
-      height: 56px;
+    .profile-pic-card {
+      position: relative;
+      width: 72px;
+      height: 72px;
       border-radius: 10px;
-      object-fit: cover;
+      overflow: hidden;
       cursor: pointer;
-      border: 2px solid transparent;
       background: #383a40;
+      border: 2px solid transparent;
       box-sizing: border-box;
     }
 
-    .profile-choice.selected {
+    .profile-pic-card.selected {
       border-color: #5865f2;
       outline: 2px solid rgba(88,101,242,0.35);
+    }
+
+    .profile-choice {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #383a40;
+    }
+
+    .profile-pic-card.locked .profile-choice {
+      filter: brightness(0.1);
+    }
+
+    .locked-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6px;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+      background: rgba(0,0,0,0.45);
+      line-height: 1.2;
     }
 
     .profile-label {
@@ -379,6 +407,26 @@
       font-size: 12px;
       opacity: 0.8;
     }
+
+    .plan-badge {
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      background: #383a40;
+      line-height: 1.4;
+    }
+
+    .plan-badge.ultra {
+      background: rgba(87,242,135,0.15);
+      border: 1px solid rgba(87,242,135,0.35);
+      color: #57f287;
+    }
+
+    .plan-badge.free {
+      background: rgba(250,166,26,0.12);
+      border: 1px solid rgba(250,166,26,0.35);
+      color: #faa61a;
+    }
   </style>
 </head>
 
@@ -419,6 +467,8 @@
   <div id="privateMenu"></div>
 
   <div id="profileMenu">
+    <div id="planStatusBadge" class="plan-badge free">Checking plan...</div>
+
     <div class="profile-label">Current profile picture</div>
     <div class="current-pic-row">
       <img id="currentPicPreview" class="current-pic-preview" src="user.png" onerror="this.src='user.png'">
@@ -448,10 +498,16 @@
 </div>
 
 <script>
+/*
+  Replace these with your real endpoints.
+*/
 const API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/chat";
-const ACCOUNT_API = API.replace(/\/api\/chat\/?$/, "/api/account");
+const API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/acccount";
+const PLAN_API = "https://planandtransaction.v987v654v321v0.workers.dev/api/plan-status";
 
-const PROFILE_PICS = [
+const DEFAULT_PROFILE_PIC = "user.png";
+
+const FREE_PROFILE_PICS = [
   "cat.jpg",
   "shrek.jpeg",
   "cat2.jpg",
@@ -463,7 +519,17 @@ const PROFILE_PICS = [
   "warrior.jpeg"
 ];
 
-const DEFAULT_PROFILE_PIC = "user.png";
+const ULTRA_PROFILE_PICS = [
+  "Slay.png",
+  "sad.jpeg",
+  "gun.jpeg",
+  "explosion.jpeg",
+  "roblox.jpeg",
+  "cat3.jpeg",
+  "hamster.jpeg"
+];
+
+const PROFILE_PICS = [...FREE_PROFILE_PICS, ...ULTRA_PROFILE_PICS];
 
 let notifyEnabled = false;
 let lastMessageCount = 0;
@@ -477,9 +543,53 @@ let lastDataSignature = null;
 let isFirstLoad = true;
 let currentChatData = [];
 let activeLoadToken = 0;
+let hasUltraPlan = false;
 
 if (!username) {
   window.location.href = "https://v987v654v321v0-dot.github.io/news/main";
+}
+
+function isUltraOnlyPic(pic) {
+  return ULTRA_PROFILE_PICS.includes(pic);
+}
+
+function isPicAllowed(pic) {
+  if (!pic) return true;
+  if (!isUltraOnlyPic(pic)) return true;
+  return hasUltraPlan;
+}
+
+async function fetchPlanStatus() {
+  try {
+    const res = await fetch(PLAN_API + "?user=" + encodeURIComponent(username));
+    if (!res.ok) throw new Error("Failed to fetch plan status");
+
+    const data = await res.json();
+    hasUltraPlan = !!data.hasUltraPlan;
+
+    renderPlanBadge();
+    renderProfileChoices();
+    renderCurrentPicPreview();
+  } catch (err) {
+    console.error("Plan check failed:", err);
+    hasUltraPlan = false;
+    renderPlanBadge();
+    renderProfileChoices();
+    renderCurrentPicPreview();
+  }
+}
+
+function renderPlanBadge() {
+  const badge = document.getElementById("planStatusBadge");
+  if (!badge) return;
+
+  if (hasUltraPlan) {
+    badge.className = "plan-badge ultra";
+    badge.textContent = "✅ Ultra Plan active — Ultra profile pictures unlocked";
+  } else {
+    badge.className = "plan-badge free";
+    badge.textContent = "🔒 No Ultra Plan — Ultra profile pictures are locked";
+  }
 }
 
 function toggleNotify(e) {
@@ -544,6 +654,11 @@ async function fetchProfile(user) {
   try {
     const res = await fetch(ACCOUNT_API + "?user=" + encodeURIComponent(user));
     const data = await res.json();
+
+    if (data && data.profilePic && isUltraOnlyPic(data.profilePic) && !hasUltraPlan && user === username) {
+      data.profilePic = "";
+    }
+
     profileCache[user] = data || {};
     return data || {};
   } catch {
@@ -553,9 +668,16 @@ async function fetchProfile(user) {
 }
 
 async function fetchMyProfile() {
+  await fetchPlanStatus();
+
   const mine = await fetchProfile(username);
   selectedProfilePic = mine.profilePic || "";
   document.getElementById("descInput").value = mine.description || "";
+
+  if (selectedProfilePic && !isPicAllowed(selectedProfilePic)) {
+    selectedProfilePic = "";
+  }
+
   renderProfileChoices();
   renderCurrentPicPreview();
 }
@@ -563,7 +685,12 @@ async function fetchMyProfile() {
 function renderCurrentPicPreview() {
   const preview = document.getElementById("currentPicPreview");
   const text = document.getElementById("currentPicText");
-  const pic = selectedProfilePic || DEFAULT_PROFILE_PIC;
+
+  let pic = selectedProfilePic || DEFAULT_PROFILE_PIC;
+  if (!isPicAllowed(pic)) {
+    pic = DEFAULT_PROFILE_PIC;
+    selectedProfilePic = "";
+  }
 
   preview.src = pic;
   text.textContent = selectedProfilePic || "No picture selected (using user.png)";
@@ -571,25 +698,50 @@ function renderCurrentPicPreview() {
 
 function renderProfileChoices() {
   const grid = document.getElementById("profilePicGrid");
+  if (!grid) return;
+
   grid.innerHTML = "";
 
   PROFILE_PICS.forEach(pic => {
+    const card = document.createElement("div");
+    const locked = isUltraOnlyPic(pic) && !hasUltraPlan;
+
+    card.className = "profile-pic-card";
+    if (selectedProfilePic === pic) {
+      card.classList.add("selected");
+    }
+    if (locked) {
+      card.classList.add("locked");
+    }
+
     const img = document.createElement("img");
     img.src = pic;
     img.className = "profile-choice";
+    img.onerror = () => { img.src = DEFAULT_PROFILE_PIC; };
 
-    if (selectedProfilePic === pic) {
-      img.classList.add("selected");
+    card.appendChild(img);
+
+    if (locked) {
+      const label = document.createElement("div");
+      label.className = "locked-label";
+      label.textContent = "You need ultra plan to get this profile picture";
+      card.appendChild(label);
     }
 
-    img.addEventListener("click", (e) => {
+    card.addEventListener("click", (e) => {
       e.stopPropagation();
+
+      if (locked) {
+        alert("You need ultra plan to get this profile picture");
+        return;
+      }
+
       selectedProfilePic = pic;
       renderProfileChoices();
       renderCurrentPicPreview();
     });
 
-    grid.appendChild(img);
+    grid.appendChild(card);
   });
 }
 
@@ -613,6 +765,14 @@ function closeProfileMenu() {
 
 async function saveProfile() {
   const description = document.getElementById("descInput").value;
+
+  if (selectedProfilePic && isUltraOnlyPic(selectedProfilePic) && !hasUltraPlan) {
+    alert("You need ultra plan to get this profile picture");
+    selectedProfilePic = "";
+    renderProfileChoices();
+    renderCurrentPicPreview();
+    return;
+  }
 
   await fetch(ACCOUNT_API, {
     method: "POST",
@@ -652,7 +812,12 @@ function getVisibleRecentMessagesForUser(user) {
 async function openUserProfilePopup(user, anchorEl) {
   const popup = document.getElementById("userProfilePopup");
   const profile = await fetchProfile(user);
-  const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
+
+  let pic = profile.profilePic || DEFAULT_PROFILE_PIC;
+  if (user === username && !isPicAllowed(pic)) {
+    pic = DEFAULT_PROFILE_PIC;
+  }
+
   const desc = profile.description || "No description set.";
   const recent = getVisibleRecentMessagesForUser(user);
 
@@ -803,7 +968,12 @@ async function renderChat(loadToken = activeLoadToken) {
 
     if (loadToken !== activeLoadToken) return;
 
-    const pic = profile.profilePic || DEFAULT_PROFILE_PIC;
+    let pic = profile.profilePic || DEFAULT_PROFILE_PIC;
+
+    if (m.user === username && !isPicAllowed(pic)) {
+      pic = DEFAULT_PROFILE_PIC;
+    }
+
     const div = document.createElement("div");
     div.className = "msg";
 
@@ -868,7 +1038,7 @@ async function load() {
   let res;
 
   try {
-    res = await fetch(API);
+    res = await fetch(CHAT_API);
   } catch (err) {
     console.error("Fetch failed:", err);
     return;
@@ -950,7 +1120,7 @@ async function send(textOverride = null) {
 
   if (!text) return;
 
-  await fetch(API, {
+  await fetch(CHAT_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -999,6 +1169,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
+fetchPlanStatus();
 setInterval(load, 2000);
 load();
 </script>
