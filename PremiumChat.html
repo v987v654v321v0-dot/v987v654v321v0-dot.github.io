@@ -901,6 +901,7 @@ function processVisibleMessages(data) {
       if (
         username !== targetUser &&
         username !== m.user &&
+        username !== "admin-account" &&
         username !== "admin-account2"
       ) {
         continue;
