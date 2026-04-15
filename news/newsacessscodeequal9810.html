@@ -1,285 +1,469 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Cloud Chat</title>
+  <meta charset="UTF-8">
+  <title>My Page</title>
+
+  <!-- Montserrat font -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
+    /* ---------- Base ---------- */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: "Segoe UI", Arial;
-      background: #1e1f22;
+      font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+      background: #0f1220;
+      color: #eaeaf0;
+      line-height: 1.6;
+    }
+
+    /* ---------- Header ---------- */
+    .header {
+      padding: 40px 20px 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0.7;
+    }
+
+    /* ---------- Main ---------- */
+    .main-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 30px 20px;
+  justify-content: center;
+}
+
+    .card {
+      background: #181c33;
+      padding: 28px;
+      border-radius: 12px;
+      max-width: 420px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+    }
+
+    .card p {
+      font-size: 15px;
+      font-weight: 400;
+      opacity: 0.9;
+      margin-bottom: 14px;
+    }
+
+    /* ---------- Button ---------- */
+    .button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 18px;
+      background: #4c6cff;
       color: white;
-      display: flex;
-      height: 100vh;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
     }
 
-    /* SIDEBAR */
-    #sidebar {
-      width: 200px;
-      background: #2b2d31;
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-      gap: 10px;
-      border-right: 1px solid #1a1b1e;
+    .button:hover {
+      background: #3a56d4;
     }
 
-    .nav-btn {
-      padding: 12px;
-      background: #383a40;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .nav-btn:hover {
-      background: #5865f2;
-    }
-
-    /* MAIN */
-    #main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #chat {
-      flex: 1;
-      overflow-y: auto;
+    /* ---------- Footer ---------- */
+    .footer {
+      text-align: center;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      font-size: 13px;
+      opacity: 0.6;
     }
 
-    .msg {
-      background: #2b2d31;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 70%;
-    }
+    .meter-box {
+  margin-top: 20px;
+}
 
-    .user {
-      font-weight: bold;
-      color: #5865f2;
-    }
+.meter-box input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: none;
+  font-family: inherit;
+}
 
-    .time {
-      font-size: 11px;
-      opacity: 0.5;
-      margin-left: 6px;
-    }
+.meter {
+  width: 100%;
+  height: 14px;
+  background: #2a2f55;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 12px 0;
+}
 
-    #bar {
-      display: flex;
-      padding: 10px;
-      background: #2b2d31;
-      border-top: 1px solid #1a1b1e;
-    }
+.meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4c6cff, #2ecc71);
+  transition: width 0.6s ease;
+}
 
-    input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #383a40;
-      color: white;
-    }
+    .account-circle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
 
-    button.send {
-      margin-left: 10px;
-      padding: 10px;
-      background: #5865f2;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-    }
+  width: 52px;
+  height: 52px;
 
-    /* 🔥 EMOJI PANEL */
-    #emojiBar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      padding: 10px;
-      background: #2b2d31;
-      border-top: 1px solid #1a1b1e;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    .emoji {
-      font-size: 20px;
-      padding: 6px;
-      cursor: pointer;
-      border-radius: 6px;
-      background: #383a40;
-    }
+  background: #4c6cff;
+  color: white;
+  text-decoration: none;
 
-    .emoji:hover {
-      background: #5865f2;
-    }
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
 
-    /* 🔍 FILTER BAR */
-    #filterBar {
-      display: flex;
-      padding: 10px;
-      gap: 10px;
-      background: #2b2d31;
-      border-bottom: 1px solid #1a1b1e;
-    }
+  border-radius: 50%;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+  z-index: 2000;
+}
 
-    #filterInput {
-      flex: 1;
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-      background: #383a40;
-      color: white;
-    }
+.account-circle:hover {
+  background: #3a56d4;
+}
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
 
-    #filterBtn {
-      padding: 8px 12px;
-      background: #5865f2;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* ← LEFT */
 
+  padding-left: 16px;          /* spacing from edge */
+
+  background: rgba(24, 28, 51, 0.95);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+}
+
+.help-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+
+  background: #4c6cff;
+  border-radius: 6px;
+}
   </style>
 </head>
 
 <body>
 
-<div id="sidebar">
-  <button class="nav-btn" onclick="go('/news/main')">🔐 Login</button>
-  <button class="nav-btn" onclick="go('/news/newsacessscodeequal9810')">📰 News</button>
-  <button class="nav-btn" onclick="go('/news/account.html')">⚙️ Settings</button>
+  <script>
+  const username = localStorage.getItem("username");
+
+  if (username) {
+    console.log("verfied....")
+  } else {
+ 
+    window.location.href = "main.html";
+    
+    
+  }
+</script>
+
+  <header class="header">
+    <h1>Classroom Drama</h1>
+    <p class="subtitle">We offer the best news straight up! New news every single day! Published every day at 6:00 PM or earlier</p>
+  </header>
+
+  <main class="main-content">
+
+    <a href="account.html" class="account-circle">Account</a>
+    
+    <div class="card">
+      <h2 style="color: white;" >Breakout</h2>
+      <p style="color: green;">
+        On March 11, 2025, Wednesday, a recent leak about crushes happened in the classroom. This was unexpected.
+        <br>
+        
+        
+
+      </p>
+
+     
+  
+      <a href="#" class="button" id="likeBtn">I hate that!</a>
+      <script>
+     const btn = document.getElementById("likeBtn");
+  let liked = false;
+
+  btn.addEventListener("click", function (e) {
+    e.preventDefault(); // stop link jump
+
+    liked = !liked;
+
+    btn.textContent = liked
+      ? "Valid ✓"
+      : "I hate that!";
+  });
+</script>
+
+    </div>
+    
+
+    <div class="card">
+      <h2>We are doing the personality flavor thing again today!</h2>
+      <p>
+        Sweet = Kind and nice<br>
+        Sour = Sassy, sometimes does mischief<br>
+        Spicy = Oddly Attractive to others, rizzful<br>
+        Bitter = Irritating, but a good friend<br>
+        Salty = Quiet, but very empathetic.<br>
+        All of the Flavors = You are kind, nice, attrative, a good friend, and a litte bit sassy at times.
+      </p>
+      <p>
+        You can see by doing the tester below. The answers are not randomized, it does math and thinking to see what you are.
+      </p>
+
+      <input
+    type="text"
+    id="nameInput"
+    placeholder="Enter your name"
+    style="padding:6px; width:100%; box-sizing:border-box;"
+  >
+
+  <br><br>
+
+  <button class="button" onclick="generateFlavor()">Check</button>
+
+  <p id="result" style="margin-top:12px; font-weight:600;"></p>
+
+      <script>
+  function generateFlavor() {
+    const input = document.getElementById("nameInput");
+    const name = input.value.toLowerCase().trim();
+
+    if (!name) {
+      document.getElementById("result").textContent =
+        "Please enter a name.";
+      return;
+    }
+
+    let score = 0;
+    for (let i = 0; i < name.length; i++) {
+      const code = name.charCodeAt(i);
+      if (code >= 97 && code <= 122) {
+        score += code - 96;
+      }
+    }
+
+    const flavors = [
+      "🌶️ Spicy",
+      "🍋 Sour",
+      "🍭 Sweet",
+      "🧂 Salty",
+      "☕ Bitter",
+      "🌈 All Flavors"
+    ];
+
+    const flavor = flavors[score % flavors.length];
+
+    document.getElementById("result").textContent =
+      input.value + ", your personality flavor is: " + flavor;
+  }
+</script>
+      
+
+      
+
+      
 </div>
 
-<div id="main">
+  <div class="card">
+      <h2>Do you want to make your own website?</h2>
+      <p>
+        New AI assitant mode! You can ask the AI to make anything in the world for your website and it will make it!
+      </p>
+      <p>
+        Just the tap of a button. Maybe you can make another news website! 
+      </p>
+      <p>
+       Please do not ask the AI assitant to make a virus website. It wont anyway though.
+      </p>
 
-  <!-- 🔍 FILTER -->
-  <div id="filterBar">
-    <input id="filterInput" placeholder="Filter by username..." />
-    <button id="filterBtn" onclick="applyFilter()">Filter</button>
+      <p>
+        We will also repeat this thing today.
+      </p>
+
+      <div class="meter-box">
+      <input type="text" placeholder="Name">
+     
+
+      <button class="button" onclick="generatePercent()">Check</button>
+
+      <div class="meter">
+        <div class="meter-fill" id="meterFill"></div>
+      </div>
+
+      <p id="percentText">You love that person this much:</p>
+
+      <script>
+ function generatePercent() {
+  const percent = Math.floor(Math.random() * 101); // 0–120
+
+  document.getElementById("meterFill").style.width = percent + "%";
+
+  if (percent === 0) {
+    document.getElementById("percentText").textContent =
+      "No connection at all.";
+  } else {
+    document.getElementById("percentText").textContent =
+      "You love that person this much: " + percent + '%';
+  }
+}
+
+</script>
+    
+  </div>
   </div>
 
-  <div id="chat"></div>
+  
 
-  <!-- 😀 EMOJIS -->
-  <div id="emojiBar">
-    <span class="emoji" onclick="sendEmoji('🔥')">🔥</span>
-    <span class="emoji" onclick="sendEmoji('😂')">😂</span>
-    <span class="emoji" onclick="sendEmoji('❤️')">❤️</span>
-    <span class="emoji" onclick="sendEmoji('👍')">👍</span>
-    <span class="emoji" onclick="sendEmoji('😎')">😎</span>
-    <span class="emoji" onclick="sendEmoji('😭')">😭</span>
-    <span class="emoji" onclick="sendEmoji('🎉')">🎉</span>
-    <span class="emoji" onclick="sendEmoji('😡')">😡</span>
-    <span class="emoji" onclick="sendEmoji('🤯')">🤯</span>
-    <span class="emoji" onclick="sendEmoji('👀')">👀</span>
-  </div>
+  
 
-  <div id="bar">
-    <input id="msg" placeholder="Type message..." />
-    <button class="send" onclick="send()">Send</button>
-  </div>
+    
+
+<div class="card">
+      <h2>Do this test to see if you have a crush or feelings on a person.</h2>
+      <p>
+        Question 1
+        If you think about that person almost never, give yourself 1 point.<br>
+        If you think about that person sometimes, give yourself 2 point.<br>
+        If you think about that person alot, give yourself 3 points.
+      </p>
+      <p>
+        Question 2<br>
+        If you imagine them spending time with someone else:<br>
+        If it doesn’t bother you, give yourself 1 point.<br>
+        If it feels slightly uncomfortable, give yourself 2 points.<br>
+        If it genuinely bothers you, give yourself 3 points.
+      </p>
+      <p>
+        Question 3<br>
+        Do you truly believe you have a crush on that person?<br>
+        Never. That person is gross! Give yourself 1 point.<br>
+        I probably do, but im not sure, give yourself 2 points.<br>
+        I do, give yourself 3 points.
+      </p>
+      <p>
+        Count your points.<br>
+
+        3-4. No romantic feelings.<br>
+
+        5-6. You might like them.<br>
+
+        7-8. You really have a crush.<br>
+
+        9. You are madly in love!
+      </p>
 
 </div>
+
+<div class="card">
+      <h2>Sorry for the lack of news</h2>
+      <p>
+        The lack of news is due to low funds and low workers. Please support the website by making an ad
+      </p>
+  
+      <h2>A new change.</h2>
+      <p>
+        On Monday, news will be published at 6:30 PM instead of 7:00 due to timing issues.
+      </p>
+      <p>
+        On Sundays and Saturdays, news will be published at 2:30 PM.
+      </p>
+
+      <a href="#" class="button" id="blockOfCheeseBtn">
+  Click me if you like the update
+</a>
 
 <script>
-const API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/chat";
+  document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("blockOfCheeseBtn");
 
-function go(url) {
-  window.location.href = url;
-}
+    let hasCheese = false;
 
-let username = localStorage.getItem("username");
-if (!username) {
-  username = prompt("Enter your username:");
-  localStorage.setItem("username", username);
-}
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
 
-// 🔍 FILTER STATE
-let activeFilter = "";
+      hasCheese = !hasCheese;
 
-// FORMAT TEXT
-function formatText(text) {
-  return text
-    .replace(/##(.*?)##/g, "<b>$1</b>")
-    .replace(/#(.*?)#/g, "<i>$1</i>");
-}
-
-// APPLY FILTER
-function applyFilter() {
-  activeFilter = document.getElementById("filterInput").value.trim();
-  load();
-}
-
-// LOAD
-async function load() {
-  const res = await fetch(API);
-  const data = await res.json();
-
-  const chat = document.getElementById("chat");
-  chat.innerHTML = "";
-
-  data.forEach(m => {
-    if (activeFilter && m.user !== activeFilter) return;
-
-    const div = document.createElement("div");
-    div.className = "msg";
-
-    const time = new Date(m.time).toLocaleTimeString();
-
-    div.innerHTML = `
-      <span class="user">${m.user}</span>
-      <span class="time">[${time}]</span><br>
-      ${formatText(m.text)}
-    `;
-
-    chat.appendChild(div);
+      btn.textContent = hasCheese
+        ? "You have a valid opinion ✓"
+        : "Click me if you like the update";
+    });
   });
-
-  chat.scrollTop = chat.scrollHeight;
-}
-
-// SEND MESSAGE
-async function send(textOverride = null) {
-  const input = document.getElementById("msg");
-  const text = textOverride || input.value;
-
-  if (!text) return;
-
-  await fetch(API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      user: username,
-      text: text
-    })
-  });
-
-  input.value = "";
-  load();
-}
-
-// 😀 SEND EMOJI
-function sendEmoji(emoji) {
-  send(emoji);
-}
-
-// ENTER KEY
-document.getElementById("msg").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") send();
-});
-
-setInterval(load, 2000);
-load();
 </script>
+
+      
+</div>
+  </header>
+  </main>
+
+ <div class="bottom-bar">
+  <button class="button danger" onclick="location.href='main.html'">
+    ALERT (logout)
+  </button>
+
+  <button class="button" onclick="location.href='games.html'">
+    Games and Fun
+  </button>
+
+  <button class="button secondary" onclick="location.href='help2.html'">
+    Ad Manager
+  </button>
+
+  <button class="button secondary" onclick="location.href='account.html'">
+    Account Settings
+  </button>
+
+   <button class="button secondary" onclick="location.href='websitehost.html'">
+    I want to host a website
+  </button>
+</div>
+
+  <footer class="footer">
+    © 2026 My Website
+  </footer>
 
 </body>
 </html>
