@@ -20,6 +20,7 @@
       padding: 10px;
       gap: 10px;
       border-right: 1px solid #1a1b1e;
+      overflow-y: auto;
     }
 
     .nav-btn {
@@ -427,6 +428,40 @@
       border: 1px solid rgba(250,166,26,0.35);
       color: #faa61a;
     }
+
+    #chatTypePanel {
+      margin-top: 10px;
+      padding: 10px;
+      background: #383a40;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #chatTypePanel select,
+    #chatTypePanel input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      background: #2b2d31;
+      color: white;
+      font-size: 13px;
+    }
+
+    #chatType2Options {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .small-note {
+      font-size: 12px;
+      opacity: 0.8;
+      line-height: 1.35;
+    }
   </style>
 </head>
 
@@ -440,6 +475,33 @@
   <button class="nav-btn" onclick="go('https://v987v654v321v0-dot.github.io/Services/Wallet/Main')">💳 Check Token Wallet</button>
   <button class="nav-btn" onclick="toggleNotify(event)">🔔 Notify: OFF</button>
   <button class="nav-btn" id="editProfileBtn" onclick="toggleProfileMenu(event)">👤 Edit Profile</button>
+
+  <div id="chatTypePanel">
+    <div style="font-weight:bold;">💬 Chat Type</div>
+
+    <select id="chatTypeSelect" onchange="changeChatType()">
+      <option value="1">Type 1 — Hide 67 and banana</option>
+      <option value="2">Type 2 — Custom user filter</option>
+      <option value="3">Type 3 — Only 67 and banana</option>
+    </select>
+
+    <div id="chatType2Options">
+      <select id="customFilterMode" onchange="saveChatTypeSettings()">
+        <option value="only">Only show these users</option>
+        <option value="hide">Hide these users</option>
+      </select>
+
+      <input
+        id="customUserList"
+        placeholder="Example: alice, bob, charlie"
+        oninput="saveChatTypeSettings()"
+      />
+
+      <div class="small-note">
+        Separate usernames with commas.
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="main">
@@ -545,6 +607,10 @@ let currentChatData = [];
 let activeLoadToken = 0;
 let hasUltraPlan = false;
 
+let chatType = localStorage.getItem("chatType") || "1";
+let customFilterMode = localStorage.getItem("customFilterMode") || "only";
+let customUserList = localStorage.getItem("customUserList") || "";
+
 if (!username) {
   window.location.href = "https://v987v654v321v0-dot.github.io/news/main";
 }
@@ -557,6 +623,77 @@ function isPicAllowed(pic) {
   if (!pic) return true;
   if (!isUltraOnlyPic(pic)) return true;
   return hasUltraPlan;
+}
+
+function normalizeUserList(str) {
+  return str
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+
+function changeChatType() {
+  const select = document.getElementById("chatTypeSelect");
+  chatType = select.value;
+  localStorage.setItem("chatType", chatType);
+  updateChatTypeUI();
+  renderChat();
+}
+
+function saveChatTypeSettings() {
+  const modeEl = document.getElementById("customFilterMode");
+  const listEl = document.getElementById("customUserList");
+
+  customFilterMode = modeEl.value;
+  customUserList = listEl.value;
+
+  localStorage.setItem("customFilterMode", customFilterMode);
+  localStorage.setItem("customUserList", customUserList);
+
+  renderChat();
+}
+
+function updateChatTypeUI() {
+  const select = document.getElementById("chatTypeSelect");
+  const type2Options = document.getElementById("chatType2Options");
+  const modeEl = document.getElementById("customFilterMode");
+  const listEl = document.getElementById("customUserList");
+
+  if (select) select.value = chatType;
+  if (modeEl) modeEl.value = customFilterMode;
+  if (listEl) listEl.value = customUserList;
+
+  if (type2Options) {
+    type2Options.style.display = chatType === "2" ? "flex" : "none";
+  }
+}
+
+function passesChatTypeFilter(messageUser) {
+  const specialUsers = ["67", "banana"];
+
+  if (chatType === "1") {
+    return !specialUsers.includes(messageUser);
+  }
+
+  if (chatType === "3") {
+    return specialUsers.includes(messageUser);
+  }
+
+  if (chatType === "2") {
+    const customUsers = normalizeUserList(customUserList);
+
+    if (customUsers.length === 0) return true;
+
+    if (customFilterMode === "only") {
+      return customUsers.includes(messageUser);
+    }
+
+    if (customFilterMode === "hide") {
+      return !customUsers.includes(messageUser);
+    }
+  }
+
+  return true;
 }
 
 async function fetchPlanStatus() {
@@ -879,6 +1016,8 @@ function processVisibleMessages(data) {
   for (const m of data) {
     nextUsers.add(m.user);
 
+    if (!passesChatTypeFilter(m.user)) continue;
+
     let text = m.text;
     let isPrivate = false;
     let visible = true;
@@ -1095,6 +1234,7 @@ function renderUserMenu() {
 
   users.forEach(u => {
     if (u === username) return;
+    if (!passesChatTypeFilter(u)) return;
 
     const div = document.createElement("div");
     div.className = "user-option";
@@ -1170,6 +1310,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
+updateChatTypeUI();
 fetchPlanStatus();
 setInterval(load, 2000);
 load();
