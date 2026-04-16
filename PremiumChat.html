@@ -936,7 +936,7 @@ function getVisibleRecentMessagesForUser(user) {
   for (let i = lastLoadedMessages.length - 1; i >= 0; i--) {
     const m = lastLoadedMessages[i];
     if (m.user !== user) continue;
-    if (/^%(.*?)% /.test(m.text)) continue;
+    if (m.privateTo) continue;
     if (m.text.includes("{{{")) continue;
 
     result.push(m);
@@ -1015,11 +1015,12 @@ function processVisibleMessages(data) {
 
   for (const m of data) {
     nextUsers.add(m.user);
+    if (m.privateTo) nextUsers.add(m.privateTo);
 
     if (!passesChatTypeFilter(m.user)) continue;
 
     let text = m.text;
-    let isPrivate = false;
+    let isPrivate = !!m.privateTo;
     let visible = true;
     let replyMeta = "";
     let forwardMeta = "";
@@ -1030,31 +1031,18 @@ function processVisibleMessages(data) {
 
     if (!visible) continue;
 
-    const match = text.match(/^%(.*?)% (.*)/);
+    if (m.privateTo) {
+      const targetUser = String(m.privateTo).trim();
 
-    if (match) {
-      const targetUser = match[1].trim();
-      const actualMessage = match[2];
-      isPrivate = true;
-
-      if (
-        username !== targetUser &&
-        username !== m.user &&
-        username !== "admin-account" &&
-        username !== "admin-account2"
-      ) {
-        continue;
-      }
-
-      text = actualMessage;
-
-      if (username === "admin-account") {
-        text = `<i style="color:#f04747;">(private → ${targetUser})</i>${text}`;
-      } else if (username === targetUser) {
-        text = `<i style="color:#43b581;">(private to you)</i>${text}`;
+      if (username === targetUser) {
+        text = `<i style="color:#43b581;">(private to you)</i>${escapeHtml(text)}`;
+      } else if (username === m.user) {
+        text = `<i style="color:#faa61a;">(private to ${escapeHtml(targetUser)})</i>${escapeHtml(text)}`;
       } else {
-        text = `<i style="color:#faa61a;">(private to ${targetUser})</i>${text}`;
+        text = `<i style="color:#f04747;">(private)</i>${escapeHtml(text)}`;
       }
+    } else {
+      text = escapeHtml(text);
     }
 
     const replyMatch = text.match(/{{reply:(.*?)}}/);
@@ -1090,6 +1078,7 @@ function processVisibleMessages(data) {
   lastLoadedMessages = visibleMessages.map(item => ({
     user: item.original.user,
     text: item.original.text,
+    privateTo: item.original.privateTo || null,
     time: item.original.time
   }));
 
@@ -1178,7 +1167,7 @@ async function load() {
   let res;
 
   try {
-    res = await fetch(CHAT_API);
+    res = await fetch(CHAT_API + "?user=" + encodeURIComponent(username));
   } catch (err) {
     console.error("Fetch failed:", err);
     return;
