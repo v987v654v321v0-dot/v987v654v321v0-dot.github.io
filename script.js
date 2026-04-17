@@ -9,6 +9,20 @@
   const ALL_MESSAGES_API = "...";
 */
 
+const CHAT_API_BASE = "https://messages-chat-acesss.v987v654v321v0.workers.dev";
+const WALLET_API_BASE = "https://planandtransaction.v987v654v321v0.workers.dev";
+
+const CHAT_API = CHAT_API_BASE + "/api/chat";
+const ACCOUNT_API = CHAT_API_BASE + "/api/account";
+const GROUPS_API = CHAT_API_BASE + "/api/groups";
+const GROUP_CHAT_API = CHAT_API_BASE + "/api/group-chat";
+const GROUP_INFO_API = CHAT_API_BASE + "/api/group";
+const GROUP_MEMBERS_API = CHAT_API_BASE + "/api/groups/members";
+const ALL_MESSAGES_API = CHAT_API_BASE + "/api/all-messages";
+
+const PLAN_API = WALLET_API_BASE + "/api/plan-status";
+const BUY_ULTRA_API = WALLET_API_BASE + "/api/buy-ultra";
+
 const DEFAULT_PROFILE_PIC = "user.png";
 
 const FREE_PROFILE_PICS = [
@@ -1054,6 +1068,8 @@ window.sendEmoji = sendEmoji;
 window.togglePrivateMenu = togglePrivateMenu;
 window.switchRoom = switchRoom;
 window.openCreateGroupPrompt = openCreateGroupPrompt;
+
+
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", boot);
