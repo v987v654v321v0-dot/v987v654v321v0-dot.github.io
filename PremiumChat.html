@@ -43,6 +43,16 @@
         </div>
       </div>
     </div>
+
+    <div id="chatTypePanel">
+      <div class="chat-type-title">🧭 Rooms</div>
+      <button class="nav-btn" onclick="switchRoom('main')" style="padding:10px;">🌍 Main Chat</button>
+      <button class="nav-btn" onclick="openCreateGroupPrompt()" style="padding:10px;">➕ Create Group</button>
+      <button class="nav-btn" id="adminAllMessagesBtn" onclick="switchRoom('all')" style="padding:10px; display:none;">🛡️ all Messages</button>
+
+      <div class="small-note">Groups you are in:</div>
+      <div id="groupList" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
   </div>
 
   <div id="main">
@@ -50,6 +60,9 @@
     <div id="filterBar">
       <input id="filterInput" placeholder="Filter by username..." />
       <button id="filterBtn" onclick="applyFilter()">Filter</button>
+      <div id="roomTitle" style="padding:8px 12px; background:#383a40; border-radius:6px; white-space:nowrap;">
+        🌍 Main Chat
+      </div>
     </div>
 
     <div id="chat"></div>
