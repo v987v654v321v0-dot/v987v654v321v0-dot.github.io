@@ -1,17 +1,13 @@
 /*
-  Replace these with your real endpoints.
+  APIs are above this in your real file.
+  Example:
+  const PLAN_API = "...";
+  const ACCOUNT_API = "...";
+  const CHAT_API = "...";
+  const GROUPS_API = "...";
+  const GROUP_CHAT_API = "...";
+  const ALL_MESSAGES_API = "...";
 */
-const CHAT_API_BASE = "https://messages-chat-acesss.v987v654v321v0.workers.dev";
-const WALLET_API_BASE = "https://planandtransaction.v987v654v321v0.workers.dev";
-
-const PLAN_API = WALLET_API_BASE + "/api/plan-status";
-const ACCOUNT_API = CHAT_API_BASE + "/api/account";
-const CHAT_API = CHAT_API_BASE + "/api/chat";
-const GROUPS_API = CHAT_API_BASE + "/api/groups";
-const GROUP_CHAT_API = CHAT_API_BASE + "/api/group-chat";
-const ALL_MESSAGES_API = CHAT_API_BASE + "/api/all-messages";
-const GROUP_INFO_API = CHAT_API_BASE + "/api/group";
-const GROUP_MEMBERS_API = CHAT_API_BASE + "/api/groups/members";
 
 const DEFAULT_PROFILE_PIC = "user.png";
 
@@ -40,17 +36,8 @@ const ULTRA_PROFILE_PICS = [
 const PROFILE_PICS = [...FREE_PROFILE_PICS, ...ULTRA_PROFILE_PICS];
 
 const ADMIN_USERS = new Set(["admin-account", "admin-account2"]);
-
 const SPAM_STORAGE_KEY = "premiumChatSpamState";
 
-/*
-  Spam detection weakened a lot:
-  - no more "2 messages quickly = block"
-  - now requires bursts
-  - long-message rule is much looser
-  - huge duplicate rule needs 3 repeats
-  - block is only 30 seconds
-*/
 const SPAM_RULES = {
   quickBurstWindowMs: 4000,
   quickBurstCount: 6,
@@ -117,7 +104,7 @@ function setRoomTitle(text) {
   if (el) el.textContent = text;
 }
 
-function switchRoom(type, group = null) {
+async function switchRoom(type, group = null) {
   if (type === "main") {
     currentRoom = { type: "main", id: null, name: "Main Chat" };
     setRoomTitle("🌍 Main Chat");
@@ -135,11 +122,12 @@ function switchRoom(type, group = null) {
 
   isFirstLoad = true;
   lastDataSignature = null;
-  load();
+  await load();
 }
 
 function changeChatType() {
   const select = document.getElementById("chatTypeSelect");
+  if (!select) return;
   chatType = select.value;
   localStorage.setItem("chatType", chatType);
   updateChatTypeUI();
@@ -149,6 +137,7 @@ function changeChatType() {
 function saveChatTypeSettings() {
   const modeEl = document.getElementById("customFilterMode");
   const listEl = document.getElementById("customUserList");
+  if (!modeEl || !listEl) return;
 
   customFilterMode = modeEl.value;
   customUserList = listEl.value;
@@ -184,26 +173,14 @@ function passesChatTypeFilter(messageUser) {
 
   const specialUsers = ["67", "banana"];
 
-  if (chatType === "1") {
-    return !specialUsers.includes(messageUser);
-  }
-
-  if (chatType === "3") {
-    return specialUsers.includes(messageUser);
-  }
+  if (chatType === "1") return !specialUsers.includes(messageUser);
+  if (chatType === "3") return specialUsers.includes(messageUser);
 
   if (chatType === "2") {
     const customUsers = normalizeUserList(customUserList);
-
     if (customUsers.length === 0) return true;
-
-    if (customFilterMode === "only") {
-      return customUsers.includes(messageUser);
-    }
-
-    if (customFilterMode === "hide") {
-      return !customUsers.includes(messageUser);
-    }
+    if (customFilterMode === "only") return customUsers.includes(messageUser);
+    if (customFilterMode === "hide") return !customUsers.includes(messageUser);
   }
 
   return true;
@@ -216,17 +193,14 @@ async function fetchPlanStatus() {
 
     const data = await res.json();
     hasUltraPlan = !!data.hasUltraPlan;
-
-    renderPlanBadge();
-    renderProfileChoices();
-    renderCurrentPicPreview();
   } catch (err) {
     console.error("Plan check failed:", err);
     hasUltraPlan = false;
-    renderPlanBadge();
-    renderProfileChoices();
-    renderCurrentPicPreview();
   }
+
+  renderPlanBadge();
+  renderProfileChoices();
+  renderCurrentPicPreview();
 }
 
 function renderPlanBadge() {
@@ -244,7 +218,9 @@ function renderPlanBadge() {
 
 function toggleNotify(e) {
   notifyEnabled = !notifyEnabled;
-  e.target.innerText = "🔔 Notify: " + (notifyEnabled ? "ON" : "OFF");
+  if (e?.target) {
+    e.target.innerText = "🔔 Notify: " + (notifyEnabled ? "ON" : "OFF");
+  }
 }
 
 function go(url) {
@@ -252,7 +228,8 @@ function go(url) {
 }
 
 function applyFilter() {
-  activeFilter = document.getElementById("filterInput").value.trim();
+  const input = document.getElementById("filterInput");
+  activeFilter = input ? input.value.trim() : "";
   renderChat();
 }
 
@@ -280,21 +257,20 @@ function shortenMessage(text, max = 15) {
     .replace(/\s+/g, " ")
     .trim();
 
-  if (clean.length <= max) return clean;
-  return clean.slice(0, max) + "...";
+  return clean.length <= max ? clean : clean.slice(0, max) + "...";
 }
 
 function prepareReply(messageText) {
   const input = document.getElementById("msg");
-  const shortText = shortenMessage(messageText);
-  input.value = `{{reply:${shortText}}} `;
+  if (!input) return;
+  input.value = `{{reply:${shortenMessage(messageText)}}} `;
   input.focus();
 }
 
 function prepareForward(messageText) {
   const input = document.getElementById("msg");
-  const shortText = shortenMessage(messageText);
-  input.value = `{{forward:${shortText}}} `;
+  if (!input) return;
+  input.value = `{{forward:${shortenMessage(messageText)}}} `;
   input.focus();
 }
 
@@ -322,7 +298,9 @@ async function fetchMyProfile() {
 
   const mine = await fetchProfile(username);
   selectedProfilePic = mine.profilePic || "";
-  document.getElementById("descInput").value = mine.description || "";
+
+  const descInput = document.getElementById("descInput");
+  if (descInput) descInput.value = mine.description || "";
 
   if (selectedProfilePic && !isPicAllowed(selectedProfilePic)) {
     selectedProfilePic = "";
@@ -335,6 +313,7 @@ async function fetchMyProfile() {
 function renderCurrentPicPreview() {
   const preview = document.getElementById("currentPicPreview");
   const text = document.getElementById("currentPicText");
+  if (!preview || !text) return;
 
   let pic = selectedProfilePic || DEFAULT_PROFILE_PIC;
   if (!isPicAllowed(pic)) {
@@ -357,18 +336,13 @@ function renderProfileChoices() {
     const locked = isUltraOnlyPic(pic) && !hasUltraPlan;
 
     card.className = "profile-pic-card";
-    if (selectedProfilePic === pic) {
-      card.classList.add("selected");
-    }
-    if (locked) {
-      card.classList.add("locked");
-    }
+    if (selectedProfilePic === pic) card.classList.add("selected");
+    if (locked) card.classList.add("locked");
 
     const img = document.createElement("img");
     img.src = pic;
     img.className = "profile-choice";
     img.onerror = () => { img.src = DEFAULT_PROFILE_PIC; };
-
     card.appendChild(img);
 
     if (locked) {
@@ -378,7 +352,7 @@ function renderProfileChoices() {
       card.appendChild(label);
     }
 
-    card.addEventListener("click", (e) => {
+    card.addEventListener("click", e => {
       e.stopPropagation();
 
       if (locked) {
@@ -399,6 +373,8 @@ function toggleProfileMenu(e) {
   if (e) e.stopPropagation();
 
   const menu = document.getElementById("profileMenu");
+  if (!menu) return;
+
   const isOpen = menu.style.display === "flex";
 
   if (isOpen) {
@@ -410,11 +386,13 @@ function toggleProfileMenu(e) {
 }
 
 function closeProfileMenu() {
-  document.getElementById("profileMenu").style.display = "none";
+  const menu = document.getElementById("profileMenu");
+  if (menu) menu.style.display = "none";
 }
 
 async function saveProfile() {
-  const description = document.getElementById("descInput").value;
+  const descInput = document.getElementById("descInput");
+  const description = descInput ? descInput.value : "";
 
   if (selectedProfilePic && isUltraOnlyPic(selectedProfilePic) && !hasUltraPlan) {
     alert("You need ultra plan to get this profile picture");
@@ -430,13 +408,13 @@ async function saveProfile() {
     body: JSON.stringify({
       user: username,
       profilePic: selectedProfilePic || "",
-      description: description
+      description
     })
   });
 
   profileCache[username] = {
     profilePic: selectedProfilePic || "",
-    description: description
+    description
   };
 
   closeProfileMenu();
@@ -450,7 +428,7 @@ function getVisibleRecentMessagesForUser(user) {
     const m = lastLoadedMessages[i];
     if (m.user !== user) continue;
     if (m.privateTo) continue;
-    if (m.text.includes("{{{")) continue;
+    if ((m.text || "").includes("{{{")) continue;
 
     result.push(m);
     if (result.length >= 5) break;
@@ -461,12 +439,12 @@ function getVisibleRecentMessagesForUser(user) {
 
 async function openUserProfilePopup(user, anchorEl) {
   const popup = document.getElementById("userProfilePopup");
+  if (!popup || !anchorEl) return;
+
   const profile = await fetchProfile(user);
 
   let pic = profile.profilePic || DEFAULT_PROFILE_PIC;
-  if (user === username && !isPicAllowed(pic)) {
-    pic = DEFAULT_PROFILE_PIC;
-  }
+  if (user === username && !isPicAllowed(pic)) pic = DEFAULT_PROFILE_PIC;
 
   const desc = profile.description || "No description set.";
   const recent = getVisibleRecentMessagesForUser(user);
@@ -493,33 +471,19 @@ async function openUserProfilePopup(user, anchorEl) {
   popup.style.display = "flex";
 
   const rect = anchorEl.getBoundingClientRect();
-  const mainRect = document.getElementById("main").getBoundingClientRect();
+  const mainRect = document.getElementById("main")?.getBoundingClientRect();
+  if (!mainRect) return;
 
   let left = rect.right - mainRect.left + 10;
   let top = rect.top - mainRect.top;
 
   popup.style.left = left + "px";
   popup.style.top = top + "px";
-
-  requestAnimationFrame(() => {
-    const popupRect = popup.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    if (popupRect.right > viewportWidth - 10) {
-      left = rect.left - mainRect.left - popupRect.width - 10;
-      popup.style.left = Math.max(10, left) + "px";
-    }
-
-    if (popupRect.bottom > viewportHeight - 10) {
-      top = Math.max(10, viewportHeight - popupRect.height - 10 - mainRect.top);
-      popup.style.top = top + "px";
-    }
-  });
 }
 
 function hideUserProfilePopup() {
-  document.getElementById("userProfilePopup").style.display = "none";
+  const popup = document.getElementById("userProfilePopup");
+  if (popup) popup.style.display = "none";
 }
 
 function normalizeMessageShape(msg) {
@@ -551,7 +515,6 @@ function processVisibleMessages(data) {
     if (text.includes("{{{") && m.user === username) {
       visible = false;
     }
-
     if (!visible) continue;
 
     if (m.privateTo) {
@@ -615,6 +578,9 @@ function processVisibleMessages(data) {
 }
 
 async function renderChat(loadToken = activeLoadToken) {
+  const chat = document.getElementById("chat");
+  if (!chat) return;
+
   const visibleMessages = processVisibleMessages(currentChatData);
   const fragment = document.createDocumentFragment();
 
@@ -627,17 +593,11 @@ async function renderChat(loadToken = activeLoadToken) {
     if (loadToken !== activeLoadToken) return;
 
     let pic = profile.profilePic || DEFAULT_PROFILE_PIC;
-
-    if (m.user === username && !isPicAllowed(pic)) {
-      pic = DEFAULT_PROFILE_PIC;
-    }
+    if (m.user === username && !isPicAllowed(pic)) pic = DEFAULT_PROFILE_PIC;
 
     const div = document.createElement("div");
     div.className = "msg";
-
-    if (item.isPrivate) {
-      div.classList.add("private");
-    }
+    if (item.isPrivate) div.classList.add("private");
 
     const time = new Date(m.time).toLocaleTimeString();
 
@@ -655,20 +615,17 @@ async function renderChat(loadToken = activeLoadToken) {
     `;
 
     const avatar = div.querySelector(".avatar");
-    avatar.addEventListener("click", (e) => {
+    avatar?.addEventListener("click", e => {
       e.stopPropagation();
       openUserProfilePopup(m.user, avatar);
     });
 
-    const replyBtn = div.querySelector(".reply-btn");
-    const forwardBtn = div.querySelector(".forward-btn");
-
-    replyBtn.addEventListener("click", (e) => {
+    div.querySelector(".reply-btn")?.addEventListener("click", e => {
       e.stopPropagation();
       prepareReply(m.text || "");
     });
 
-    forwardBtn.addEventListener("click", (e) => {
+    div.querySelector(".forward-btn")?.addEventListener("click", e => {
       e.stopPropagation();
       prepareForward(m.text || "");
     });
@@ -678,7 +635,6 @@ async function renderChat(loadToken = activeLoadToken) {
 
   if (loadToken !== activeLoadToken) return;
 
-  const chat = document.getElementById("chat");
   chat.innerHTML = "";
   chat.appendChild(fragment);
 
@@ -755,9 +711,9 @@ async function openCreateGroupPrompt() {
     await fetchGroups();
 
     if (data.group) {
-      switchRoom("group", data.group);
+      await switchRoom("group", data.group);
     } else {
-      switchRoom("main");
+      await switchRoom("main");
     }
   } catch (err) {
     console.error(err);
@@ -794,8 +750,7 @@ async function loadAllMessages(loadToken) {
 
 async function load() {
   const loadToken = ++activeLoadToken;
-
-  let data;
+  let data = [];
 
   try {
     if (currentRoom.type === "main") {
@@ -804,8 +759,6 @@ async function load() {
       data = await loadGroupChat(loadToken);
     } else if (currentRoom.type === "all") {
       data = await loadAllMessages(loadToken);
-    } else {
-      data = [];
     }
   } catch (err) {
     console.error("Fetch failed:", err);
@@ -826,10 +779,7 @@ async function load() {
   lastMessageCount = Array.isArray(data) ? data.length : 0;
 
   const newSignature = JSON.stringify(data);
-
-  if (newSignature === lastDataSignature) {
-    return;
-  }
+  if (newSignature === lastDataSignature) return;
 
   lastDataSignature = newSignature;
   currentChatData = Array.isArray(data) ? data : [];
@@ -845,16 +795,18 @@ function togglePrivateMenu(e) {
   }
 
   const menu = document.getElementById("privateMenu");
-  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+  if (menu) {
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+  }
 }
 
 function renderUserMenu() {
   const menu = document.getElementById("privateMenu");
+  if (!menu) return;
+
   menu.innerHTML = "";
 
-  if (currentRoom.type === "all") {
-    return;
-  }
+  if (currentRoom.type === "all") return;
 
   users.forEach(u => {
     if (u === username) return;
@@ -863,19 +815,17 @@ function renderUserMenu() {
     const div = document.createElement("div");
     div.className = "user-option";
     div.textContent = u;
-
     div.onclick = () => {
       sendPrivate(u);
       menu.style.display = "none";
     };
-
     menu.appendChild(div);
   });
 }
 
 function sendPrivate(target) {
   const input = document.getElementById("msg");
-  if (!input.value) return;
+  if (!input || !input.value) return;
   send(`%${target}% ${input.value}`);
 }
 
@@ -886,12 +836,7 @@ function sendEmoji(e) {
 function getSpamState() {
   try {
     const raw = localStorage.getItem(SPAM_STORAGE_KEY);
-    if (!raw) {
-      return {
-        blockedUntil: 0,
-        history: []
-      };
-    }
+    if (!raw) return { blockedUntil: 0, history: [] };
 
     const parsed = JSON.parse(raw);
     return {
@@ -899,10 +844,7 @@ function getSpamState() {
       history: Array.isArray(parsed.history) ? parsed.history : []
     };
   } catch {
-    return {
-      blockedUntil: 0,
-      history: []
-    };
+    return { blockedUntil: 0, history: [] };
   }
 }
 
@@ -925,12 +867,7 @@ function formatBlockTime(ms) {
   const totalSeconds = Math.ceil(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
-
-  return `${seconds}s`;
+  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 }
 
 function checkSpamAndApplyBlock(text) {
@@ -954,14 +891,12 @@ function checkSpamAndApplyBlock(text) {
   );
 
   const recentLongMessages = state.history.filter(
-    entry =>
-      entry.length >= SPAM_RULES.longMessageLength &&
+    entry => entry.length >= SPAM_RULES.longMessageLength &&
       now - entry.time <= SPAM_RULES.longBurstWindowMs
   );
 
   const recentHugeDuplicates = state.history.filter(
-    entry =>
-      entry.length >= SPAM_RULES.hugeMessageLength &&
+    entry => entry.length >= SPAM_RULES.hugeMessageLength &&
       length >= SPAM_RULES.hugeMessageLength &&
       entry.cleaned === cleaned &&
       now - entry.time <= SPAM_RULES.duplicateHugeWindowMs
@@ -993,12 +928,7 @@ function checkSpamAndApplyBlock(text) {
     return { blocked: true, reason };
   }
 
-  state.history.push({
-    time: now,
-    cleaned,
-    length
-  });
-
+  state.history.push({ time: now, cleaned, length });
   saveSpamState(state);
   return { blocked: false };
 }
@@ -1007,15 +937,10 @@ async function postMainMessage(text) {
   const res = await fetch(CHAT_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      user: username,
-      text
-    })
+    body: JSON.stringify({ user: username, text })
   });
 
-  if (!res.ok) {
-    throw new Error(await res.text());
-  }
+  if (!res.ok) throw new Error(await res.text());
 }
 
 async function postGroupMessage(text) {
@@ -1029,16 +954,14 @@ async function postGroupMessage(text) {
     })
   });
 
-  if (!res.ok) {
-    throw new Error(await res.text());
-  }
+  if (!res.ok) throw new Error(await res.text());
 }
 
 async function send(textOverride = null) {
   const input = document.getElementById("msg");
-  const text = textOverride || input.value;
+  const text = textOverride || input?.value || "";
 
-  if (!text || !text.trim()) return;
+  if (!text.trim()) return;
 
   if (currentRoom.type === "all") {
     alert('You cannot send messages while viewing "all Messages".');
@@ -1046,7 +969,6 @@ async function send(textOverride = null) {
   }
 
   const spamCheck = checkSpamAndApplyBlock(text);
-
   if (spamCheck.blocked) {
     alert(spamCheck.reason);
     return;
@@ -1059,53 +981,82 @@ async function send(textOverride = null) {
       await postMainMessage(text);
     }
 
-    input.value = "";
-    load();
+    if (input) input.value = "";
+    await load();
   } catch (err) {
     console.error(err);
     alert("Failed to send message: " + err.message);
   }
 }
 
-document.getElementById("msg").addEventListener("keypress", e => {
-  if (e.key === "Enter") send();
-});
-
-document.addEventListener("click", (e) => {
-  const popup = document.getElementById("userProfilePopup");
-  const profileMenu = document.getElementById("profileMenu");
-  const privateMenu = document.getElementById("privateMenu");
-  const editProfileBtn = document.getElementById("editProfileBtn");
-  const privateBtn = document.getElementById("privateBtn");
-
-  if (popup.style.display === "flex" && !popup.contains(e.target)) {
-    hideUserProfilePopup();
+function attachStaticListeners() {
+  const msgInput = document.getElementById("msg");
+  if (msgInput) {
+    msgInput.addEventListener("keypress", e => {
+      if (e.key === "Enter") send();
+    });
   }
 
-  if (
-    profileMenu.style.display === "flex" &&
-    !profileMenu.contains(e.target) &&
-    !editProfileBtn.contains(e.target)
-  ) {
-    closeProfileMenu();
-  }
+  document.addEventListener("click", e => {
+    const popup = document.getElementById("userProfilePopup");
+    const profileMenu = document.getElementById("profileMenu");
+    const privateMenu = document.getElementById("privateMenu");
+    const editProfileBtn = document.getElementById("editProfileBtn");
+    const privateBtn = document.getElementById("privateBtn");
 
-  if (
-    privateMenu.style.display === "flex" &&
-    !privateMenu.contains(e.target) &&
-    !privateBtn.contains(e.target)
-  ) {
-    privateMenu.style.display = "none";
-  }
-});
+    if (popup && popup.style.display === "flex" && !popup.contains(e.target)) {
+      hideUserProfilePopup();
+    }
+
+    if (
+      profileMenu &&
+      editProfileBtn &&
+      profileMenu.style.display === "flex" &&
+      !profileMenu.contains(e.target) &&
+      !editProfileBtn.contains(e.target)
+    ) {
+      closeProfileMenu();
+    }
+
+    if (
+      privateMenu &&
+      privateBtn &&
+      privateMenu.style.display === "flex" &&
+      !privateMenu.contains(e.target) &&
+      !privateBtn.contains(e.target)
+    ) {
+      privateMenu.style.display = "none";
+    }
+  });
+}
 
 async function boot() {
+  attachStaticListeners();
   updateChatTypeUI();
-  fetchPlanStatus();
+  await fetchPlanStatus();
   await fetchGroups();
   await load();
   setInterval(load, 2000);
   setInterval(fetchGroups, 8000);
 }
 
-boot();
+/* make inline HTML onclick handlers work everywhere */
+window.go = go;
+window.toggleNotify = toggleNotify;
+window.toggleProfileMenu = toggleProfileMenu;
+window.closeProfileMenu = closeProfileMenu;
+window.saveProfile = saveProfile;
+window.changeChatType = changeChatType;
+window.saveChatTypeSettings = saveChatTypeSettings;
+window.applyFilter = applyFilter;
+window.send = send;
+window.sendEmoji = sendEmoji;
+window.togglePrivateMenu = togglePrivateMenu;
+window.switchRoom = switchRoom;
+window.openCreateGroupPrompt = openCreateGroupPrompt;
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
