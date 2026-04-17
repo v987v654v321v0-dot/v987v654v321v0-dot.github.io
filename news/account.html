@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>News Docs</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Settings</title>
 
-  <!-- Inter font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* ---------- Reset / Base ---------- */
     * {
       box-sizing: border-box;
     }
@@ -21,9 +20,8 @@
       line-height: 1.6;
     }
 
-    /* ---------- Header ---------- */
     .header {
-      padding: 48px 20px 24px;
+      padding: 42px 20px 18px;
       text-align: center;
     }
 
@@ -40,186 +38,558 @@
       opacity: 0.7;
     }
 
-    /* ---------- Main ---------- */
     .main-content {
       padding: 24px 20px 80px;
-      max-width: 800px;
+      max-width: 980px;
       margin: 0 auto;
-    }  
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+    }
 
     .card {
       background: #181c33;
-      max-width: 480px;
-      padding: 32px;
-      border-radius: 14px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
     }
 
     .card h2 {
-      margin-top: 0;
+      margin: 0 0 14px;
       font-size: 22px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: -0.4px;
     }
 
     .card p {
       font-size: 15px;
-      opacity: 0.9;
-      margin-bottom: 16px;
+      opacity: 0.92;
+      margin: 0 0 16px;
     }
 
-    /* ---------- Button ---------- */
+    .profile-top {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .profile-preview {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #232844;
+      border: 3px solid #2f365b;
+      flex-shrink: 0;
+    }
+
+    .profile-meta h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .profile-meta p {
+      margin: 4px 0 0;
+      opacity: 0.7;
+      font-size: 14px;
+    }
+
+    .section-label {
+      margin: 20px 0 10px;
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .profile-pic-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .profile-pic-card {
+      position: relative;
+      background: #232844;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 1 / 1;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .profile-pic-card:hover {
+      transform: translateY(-2px);
+      border-color: #6b84ff;
+    }
+
+    .profile-pic-card.selected {
+      border-color: #8ba0ff;
+      box-shadow: 0 0 0 3px rgba(107,132,255,0.22);
+    }
+
+    .profile-choice {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .locked-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: white;
+      background: rgba(0,0,0,0.58);
+    }
+
+    .profile-pic-card.locked .profile-choice {
+      filter: brightness(0.22);
+    }
+
+    .button-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
     .button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 12px 22px;
-  background: linear-gradient(135deg, #4c6cff, #6b84ff);
-  color: #ffffff;
-  text-decoration: none;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(76,108,255,0.35);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
-}
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, #4c6cff, #6b84ff);
+      color: #ffffff;
+      text-decoration: none;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(76,108,255,0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
 
-.button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(76,108,255,0.45);
-}
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(76,108,255,0.45);
+    }
 
-.button:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 16px rgba(76,108,255,0.35);
-}
+    .button:active {
+      transform: translateY(0);
+    }
 
-    /* ---------- Footer ---------- */
+    .button.secondary {
+      background: linear-gradient(135deg, #2a304f, #3b4368);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .button.danger {
+      background: linear-gradient(135deg, #d3485c, #eb5f73);
+      box-shadow: 0 8px 20px rgba(211,72,92,0.30);
+    }
+
+    .button.success {
+      background: linear-gradient(135deg, #2ecc71, #4fd38b);
+      box-shadow: 0 8px 20px rgba(46,204,113,0.30);
+    }
+
+    .status {
+      margin-top: 14px;
+      font-size: 14px;
+      opacity: 0.88;
+      min-height: 22px;
+    }
+
+    .small-note {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 8px;
+    }
+
     .footer {
       text-align: center;
       padding: 20px;
       font-size: 13px;
       opacity: 0.5;
     }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-pic-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .profile-pic-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
   </style>
 </head>
-
 <body>
-
   <header class="header">
     <h1>Account Settings</h1>
-    <p class="subtitle"></p>
+    <p class="subtitle">Manage your account, profile picture, and navigation.</p>
   </header>
 
   <main class="main-content">
-    
-      <h2>Logged in as <strong id="usernameText"></strong></h2>
-      <p>
-        Remember, if you switch browsers you might lose some of your data, but your account will always be there.
-      </p>
+    <div class="grid">
+      <section class="card">
+        <h2>Your Account</h2>
 
-  <script>
-  const username = localStorage.getItem("username");
+        <div class="profile-top">
+          <img
+            id="currentProfilePic"
+            class="profile-preview"
+            src="../../user.png"
+            alt="Profile picture"
+            onerror="this.src='../../user.png'"
+          />
 
-  if (username) {
-    document.getElementById("usernameText").textContent = username;
-  } else {
-    document.getElementById("usernameText").textContent = "No Login... you are on the blacklist.";
-    window.location.href = "main.html";
-    
-    
-  }
-</script>
+          <div class="profile-meta">
+            <h3>Logged in as <strong id="usernameText"></strong></h3>
+            <p id="planText">Checking plan...</p>
+          </div>
+        </div>
 
-   <button class="button danger" onclick="runCode()">Full Logout (this will also logout your localstorage)</button>
+        <p>
+          Remember: if you switch browsers, you might lose browser-stored data,
+          but your account itself should still exist.
+        </p>
 
-<script>
-  function runCode() {
-    alert("Logged out.");
+        <div class="section-label">Change Profile Picture</div>
+        <div id="profilePicGrid" class="profile-pic-grid"></div>
 
-    localStorage.removeItem("username");
-    localStorage.removeItem("loggedIn");
+        <div class="button-row" style="margin-top:14px;">
+          <button class="button success" onclick="saveProfilePicture()">Save Profile Picture</button>
+          <button class="button secondary" onclick="resetProfilePicture()">Reset to Default</button>
+        </div>
 
-    window.location.href = "main.html";
-  }
-</script>
+        <div id="profileStatus" class="status"></div>
+        <div class="small-note">
+          Profile pictures are loaded from the parent of the parent folder using <code>../../</code>.
+        </div>
+      </section>
 
-    <button class="button danger" onclick="runCode2()">Apply for premission to publish your own newsletter.</button>
+      <section class="card">
+        <h2>Quick Actions</h2>
 
-<script>
-  function runCode2() {
-    alert("Okay, please put your idea in. It might be selected.");
+        <div class="button-list">
+          <button class="button danger" onclick="fullLogout()">Full Logout</button>
+          <button class="button secondary" onclick="halfLogout()">Half Logout</button>
+          <button class="button" onclick="applyForNewsletter()">Apply to Publish a Newsletter</button>
+          <button class="button secondary" onclick="goToMainNews()">Go Back to Main News</button>
+          <button class="button secondary" onclick="goToPremiumChat()">Go Back to Premium Chat</button>
 
-    window.location.href = "https://docs.google.com/document/d/1nLPk2IJFcDbFq-cRUgcq76OW4qdHlIHBAFCkcvlbx2o/edit?tab=t.0";
-  }
-</script>
+          <button class="button secondary" onclick="goToWallet()">Open Token Wallet</button>
+          <button class="button secondary" onclick="goToPlan()">Open Ultra Plan Page</button>
+          <button class="button secondary" onclick="refreshPage()">Refresh Page</button>
 
-    <button class="button danger" onclick="runCode3()">Half Logout (not full, you can easily log back in), not secure, if you are logging out for the day use Full logout.</button>
-
-    <script>
-  function runCode3() {
-    alert("Logged out.");
-
-    
-
-    window.location.href = "main.html";
-  }
-</script>
-
-    <button class="button danger" onclick="runCode4()">Go back to Main News    </button>
-
-    <script>
-  function runCode4() {
-
-    
-
-    window.location.href = "newsacessscodeequal9810.html";
-  }
-</script>
-
-    <button class="button danger" onclick="runCode5()">Go back to Premium Chat    </button>
-
-    <script>
-  function runCode5() {
-
-    
-
-    window.location.href = "https://v987v654v321v0-dot.github.io/PremiumChat";
-  }
-</script>
-
-    <button id="adminBtn" class="button danger" style="display:none;">
-      Admin Panel
-  </button>
-
-    <script>
-  const adminBtn = document.getElementById("adminBtn");
-
-  const loggedIn = localStorage.getItem("loggedIn");
-  const username2 = localStorage.getItem("username");
-
-  if (loggedIn === "true" && username2 === "admin-account") {
-    adminBtn.style.display = "block";
-
-    adminBtn.onclick = () => {
-      window.location.href = "adminpanel.html";
-    };
-  }
-</script>
-
+          <button id="adminBtn" class="button danger" style="display:none;">Admin Panel</button>
+        </div>
+      </section>
+    </div>
   </main>
-
-  
 
   <footer class="footer">
     © 2026 My Website
   </footer>
 
+  <script>
+    /*
+      Put your real API here.
+      You said you already have it in your real file, so leave your real value there.
+    */
+    const ACCOUNT_API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/account";
+
+    const ASSET_BASE = "../../";
+    const DEFAULT_PROFILE_PIC = "user.png";
+
+    const FREE_PROFILE_PICS = [
+      "cat.jpg",
+      "shrek.jpeg",
+      "cat2.jpg",
+      "nuke.jpeg",
+      "sushi.jpeg",
+      "burger.jpeg",
+      "background.jpg",
+      "enstein.jpeg",
+      "warrior.jpeg"
+    ];
+
+    const ULTRA_PROFILE_PICS = [
+      "Slay.png",
+      "sad.jpeg",
+      "gun.jpeg",
+      "explosion.jpeg",
+      "roblox.jpeg",
+      "cat3.jpeg",
+      "hamster.jpeg"
+    ];
+
+    const PROFILE_PICS = [...FREE_PROFILE_PICS, ...ULTRA_PROFILE_PICS];
+
+    const username = localStorage.getItem("username");
+    const loggedIn = localStorage.getItem("loggedIn");
+    let selectedProfilePic = "";
+    let hasUltraPlan = false;
+
+    function assetUrl(file) {
+      return ASSET_BASE + file;
+    }
+
+    function isUltraOnlyPic(pic) {
+      return ULTRA_PROFILE_PICS.includes(pic);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function setStatus(text, isError = false) {
+      const el = document.getElementById("profileStatus");
+      if (!el) return;
+      el.textContent = text;
+      el.style.color = isError ? "#ff8b99" : "#9fe3b2";
+    }
+
+    function requireLogin() {
+      if (!username) {
+        const nameEl = document.getElementById("usernameText");
+        if (nameEl) {
+          nameEl.textContent = "No Login... you are on the blacklist.";
+        }
+        window.location.href = "main.html";
+        return false;
+      }
+      return true;
+    }
+
+    function renderUsername() {
+      const el = document.getElementById("usernameText");
+      if (el) el.textContent = username || "Unknown";
+    }
+
+    function renderCurrentProfilePic() {
+      const img = document.getElementById("currentProfilePic");
+      if (!img) return;
+
+      const file = selectedProfilePic || DEFAULT_PROFILE_PIC;
+      img.src = assetUrl(file);
+      img.onerror = () => {
+        img.src = assetUrl(DEFAULT_PROFILE_PIC);
+      };
+    }
+
+    function renderPlanText() {
+      const el = document.getElementById("planText");
+      if (!el) return;
+      el.textContent = hasUltraPlan ? "Ultra Plan active" : "No Ultra Plan detected";
+    }
+
+    function renderProfilePicChoices() {
+      const grid = document.getElementById("profilePicGrid");
+      if (!grid) return;
+
+      grid.innerHTML = "";
+
+      PROFILE_PICS.forEach(pic => {
+        const locked = isUltraOnlyPic(pic) && !hasUltraPlan;
+
+        const card = document.createElement("div");
+        card.className = "profile-pic-card";
+        if (selectedProfilePic === pic) {
+          card.classList.add("selected");
+        }
+        if (locked) {
+          card.classList.add("locked");
+        }
+
+        const img = document.createElement("img");
+        img.className = "profile-choice";
+        img.src = assetUrl(pic);
+        img.alt = pic;
+        img.onerror = () => {
+          img.src = assetUrl(DEFAULT_PROFILE_PIC);
+        };
+
+        card.appendChild(img);
+
+        if (locked) {
+          const label = document.createElement("div");
+          label.className = "locked-label";
+          label.textContent = "Ultra only";
+          card.appendChild(label);
+        }
+
+        card.addEventListener("click", () => {
+          if (locked) {
+            alert("You need Ultra Plan to use this profile picture.");
+            return;
+          }
+
+          selectedProfilePic = pic;
+          renderProfilePicChoices();
+          renderCurrentProfilePic();
+          setStatus("Profile picture selected. Click Save Profile Picture.");
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    async function loadAccount() {
+      try {
+        const res = await fetch(ACCOUNT_API + "?user=" + encodeURIComponent(username));
+        if (!res.ok) {
+          throw new Error("Failed to load account");
+        }
+
+        const data = await res.json();
+
+        selectedProfilePic = typeof data.profilePic === "string" ? data.profilePic : "";
+        hasUltraPlan = !!data.hasUltraPlan;
+
+        renderPlanText();
+        renderCurrentProfilePic();
+        renderProfilePicChoices();
+      } catch (err) {
+        console.error(err);
+        selectedProfilePic = "";
+        hasUltraPlan = false;
+        renderPlanText();
+        renderCurrentProfilePic();
+        renderProfilePicChoices();
+        setStatus("Could not load account info.", true);
+      }
+    }
+
+    async function saveProfilePicture() {
+      if (!username) return;
+
+      if (selectedProfilePic && isUltraOnlyPic(selectedProfilePic) && !hasUltraPlan) {
+        alert("You need Ultra Plan to use this profile picture.");
+        return;
+      }
+
+      try {
+        const res = await fetch(ACCOUNT_API, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            user: username,
+            profilePic: selectedProfilePic || ""
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to save profile picture");
+        }
+
+        setStatus("Profile picture saved.");
+      } catch (err) {
+        console.error(err);
+        setStatus("Failed to save profile picture.", true);
+      }
+    }
+
+    function resetProfilePicture() {
+      selectedProfilePic = "";
+      renderCurrentProfilePic();
+      renderProfilePicChoices();
+      setStatus("Reset to default. Click Save Profile Picture.");
+    }
+
+    function fullLogout() {
+      alert("Logged out.");
+      localStorage.removeItem("username");
+      localStorage.removeItem("loggedIn");
+      window.location.href = "main.html";
+    }
+
+    function halfLogout() {
+      alert("Logged out.");
+      window.location.href = "main.html";
+    }
+
+    function applyForNewsletter() {
+      alert("Okay, please put your idea in. It might be selected.");
+      window.location.href = "https://docs.google.com/document/d/1nLPk2IJFcDbFq-cRUgcq76OW4qdHlIHBAFCkcvlbx2o/edit?tab=t.0";
+    }
+
+    function goToMainNews() {
+      window.location.href = "newsacessscodeequal9810.html";
+    }
+
+    function goToPremiumChat() {
+      window.location.href = "https://v987v654v321v0-dot.github.io/PremiumChat";
+    }
+
+    function goToWallet() {
+      window.location.href = "https://v987v654v321v0-dot.github.io/Services/Wallet/Main";
+    }
+
+    function goToPlan() {
+      window.location.href = "https://v987v654v321v0-dot.github.io/Services/Wallet/Plan";
+    }
+
+    function refreshPage() {
+      window.location.reload();
+    }
+
+    function setupAdminButton() {
+      const adminBtn = document.getElementById("adminBtn");
+      if (!adminBtn) return;
+
+      if (loggedIn === "true" && username === "admin-account") {
+        adminBtn.style.display = "inline-flex";
+        adminBtn.onclick = () => {
+          window.location.href = "adminpanel.html";
+        };
+      }
+    }
+
+    async function init() {
+      if (!requireLogin()) return;
+      renderUsername();
+      setupAdminButton();
+      await loadAccount();
+    }
+
+    init();
+  </script>
 </body>
 </html>
