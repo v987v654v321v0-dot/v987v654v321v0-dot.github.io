@@ -1,9 +1,17 @@
 /*
   Replace these with your real endpoints.
 */
-const CHAT_API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/chat";
-const ACCOUNT_API = "https://messages-chat-acesss.v987v654v321v0.workers.dev/api/account";
-const PLAN_API = "https://planandtransaction.v987v654v321v0.workers.dev/api/plan-status";
+const CHAT_API_BASE = "https://messages-chat-acesss.v987v654v321v0.workers.dev";
+const WALLET_API_BASE = "https://planandtransaction.v987v654v321v0.workers.dev";
+
+const PLAN_API = WALLET_API_BASE + "/api/plan-status";
+const ACCOUNT_API = CHAT_API_BASE + "/api/account";
+const CHAT_API = CHAT_API_BASE + "/api/chat";
+const GROUPS_API = CHAT_API_BASE + "/api/groups";
+const GROUP_CHAT_API = CHAT_API_BASE + "/api/group-chat";
+const ALL_MESSAGES_API = CHAT_API_BASE + "/api/all-messages";
+const GROUP_INFO_API = CHAT_API_BASE + "/api/group";
+const GROUP_MEMBERS_API = CHAT_API_BASE + "/api/groups/members";
 
 const DEFAULT_PROFILE_PIC = "user.png";
 
@@ -31,16 +39,32 @@ const ULTRA_PROFILE_PICS = [
 
 const PROFILE_PICS = [...FREE_PROFILE_PICS, ...ULTRA_PROFILE_PICS];
 
+const ADMIN_USERS = new Set(["admin-account", "admin-account2"]);
+
 const SPAM_STORAGE_KEY = "premiumChatSpamState";
 
+/*
+  Spam detection weakened a lot:
+  - no more "2 messages quickly = block"
+  - now requires bursts
+  - long-message rule is much looser
+  - huge duplicate rule needs 3 repeats
+  - block is only 30 seconds
+*/
 const SPAM_RULES = {
-  quickMessageWindowMs: 2800,
-  longMessageLength: 350,
-  longMessageWindowMs: 5000,
-  hugeMessageLength: 900,
-  duplicateHugeWindowMs: 7000,
-  blockDurationMs: 5 * 60 * 1000,
-  historyMaxAgeMs: 15000
+  quickBurstWindowMs: 4000,
+  quickBurstCount: 6,
+
+  longMessageLength: 1800,
+  longBurstWindowMs: 12000,
+  longBurstCount: 3,
+
+  hugeMessageLength: 6000,
+  duplicateHugeWindowMs: 15000,
+  duplicateHugeCount: 3,
+
+  blockDurationMs: 30 * 1000,
+  historyMaxAgeMs: 30000
 };
 
 let notifyEnabled = false;
@@ -56,6 +80,8 @@ let isFirstLoad = true;
 let currentChatData = [];
 let activeLoadToken = 0;
 let hasUltraPlan = false;
+let myGroups = [];
+let currentRoom = { type: "main", id: null, name: "Main Chat" };
 
 let chatType = localStorage.getItem("chatType") || "1";
 let customFilterMode = localStorage.getItem("customFilterMode") || "only";
@@ -63,6 +89,10 @@ let customUserList = localStorage.getItem("customUserList") || "";
 
 if (!username) {
   window.location.href = "https://v987v654v321v0-dot.github.io/news/main";
+}
+
+function isAdminUser(user) {
+  return ADMIN_USERS.has((user || "").trim());
 }
 
 function isUltraOnlyPic(pic) {
@@ -76,10 +106,36 @@ function isPicAllowed(pic) {
 }
 
 function normalizeUserList(str) {
-  return str
+  return String(str || "")
     .split(",")
     .map(x => x.trim())
     .filter(Boolean);
+}
+
+function setRoomTitle(text) {
+  const el = document.getElementById("roomTitle");
+  if (el) el.textContent = text;
+}
+
+function switchRoom(type, group = null) {
+  if (type === "main") {
+    currentRoom = { type: "main", id: null, name: "Main Chat" };
+    setRoomTitle("🌍 Main Chat");
+  } else if (type === "group" && group) {
+    currentRoom = { type: "group", id: group.id, name: group.name };
+    setRoomTitle("👥 " + group.name);
+  } else if (type === "all" && isAdminUser(username)) {
+    currentRoom = { type: "all", id: null, name: "all Messages" };
+    setRoomTitle("🛡️ all Messages");
+  }
+
+  activeFilter = "";
+  const filterInput = document.getElementById("filterInput");
+  if (filterInput) filterInput.value = "";
+
+  isFirstLoad = true;
+  lastDataSignature = null;
+  load();
 }
 
 function changeChatType() {
@@ -116,9 +172,16 @@ function updateChatTypeUI() {
   if (type2Options) {
     type2Options.style.display = chatType === "2" ? "flex" : "none";
   }
+
+  const adminBtn = document.getElementById("adminAllMessagesBtn");
+  if (adminBtn) {
+    adminBtn.style.display = isAdminUser(username) ? "block" : "none";
+  }
 }
 
 function passesChatTypeFilter(messageUser) {
+  if (currentRoom.type !== "main") return true;
+
   const specialUsers = ["67", "banana"];
 
   if (chatType === "1") {
@@ -421,7 +484,7 @@ async function openUserProfilePopup(user, anchorEl) {
     <div class="recent-messages">
       ${
         recent.length
-          ? recent.map(m => `<div class="recent-message">${formatText(escapeHtml(m.text))}</div>`).join("")
+          ? recent.map(m => `<div class="recent-message">${formatText(escapeHtml(m.text || ""))}</div>`).join("")
           : `<div class="recent-empty">No recent public messages.</div>`
       }
     </div>
@@ -459,15 +522,25 @@ function hideUserProfilePopup() {
   document.getElementById("userProfilePopup").style.display = "none";
 }
 
+function normalizeMessageShape(msg) {
+  return {
+    ...msg,
+    text: typeof msg.text === "string" ? msg.text : "",
+    user: typeof msg.user === "string" ? msg.user : "unknown"
+  };
+}
+
 function processVisibleMessages(data) {
   const visibleMessages = [];
   const nextUsers = new Set();
 
-  for (const m of data) {
+  for (const raw of data) {
+    const m = normalizeMessageShape(raw);
+
     nextUsers.add(m.user);
     if (m.privateTo) nextUsers.add(m.privateTo);
 
-    if (!passesChatTypeFilter(m.user)) continue;
+    if (currentRoom.type === "main" && !passesChatTypeFilter(m.user)) continue;
 
     let text = m.text;
     let isPrivate = !!m.privateTo;
@@ -485,11 +558,13 @@ function processVisibleMessages(data) {
       const targetUser = String(m.privateTo).trim();
 
       if (username === targetUser) {
-        text = `<i style="color:#43b581;">(private to you)</i>${escapeHtml(text)}`;
+        text = `<i style="color:#43b581;">(private to you)</i> ${escapeHtml(text)}`;
       } else if (username === m.user) {
-        text = `<i style="color:#faa61a;">(private to ${escapeHtml(targetUser)})</i>${escapeHtml(text)}`;
+        text = `<i style="color:#faa61a;">(private to ${escapeHtml(targetUser)})</i> ${escapeHtml(text)}`;
+      } else if (isAdminUser(username)) {
+        text = `<i style="color:#f04747;">(private ${escapeHtml(m.user)} → ${escapeHtml(targetUser)})</i> ${escapeHtml(text)}`;
       } else {
-        text = `<i style="color:#f04747;">(private)</i>${escapeHtml(text)}`;
+        text = `<i style="color:#f04747;">(private)</i> ${escapeHtml(text)}`;
       }
     } else {
       text = escapeHtml(text);
@@ -513,6 +588,10 @@ function processVisibleMessages(data) {
 
     if (forwardMeta) {
       text = `<span class="forward-label">(forwarded "${escapeHtml(forwardMeta)}")</span>` + text;
+    }
+
+    if (currentRoom.type === "all" && m.source === "group") {
+      text = `<span class="forward-label">[Group: ${escapeHtml(m.groupName || m.groupId || "unknown")}]</span>` + text;
     }
 
     if (activeFilter && m.user !== activeFilter) continue;
@@ -586,12 +665,12 @@ async function renderChat(loadToken = activeLoadToken) {
 
     replyBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      prepareReply(m.text);
+      prepareReply(m.text || "");
     });
 
     forwardBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      prepareForward(m.text);
+      prepareForward(m.text || "");
     });
 
     fragment.appendChild(div);
@@ -611,44 +690,140 @@ async function renderChat(loadToken = activeLoadToken) {
   }
 }
 
+async function fetchGroups() {
+  try {
+    const res = await fetch(GROUPS_API + "?user=" + encodeURIComponent(username));
+    if (!res.ok) throw new Error("Failed groups");
+    myGroups = await res.json();
+  } catch (err) {
+    console.error("Failed to load groups:", err);
+    myGroups = [];
+  }
+
+  renderGroupList();
+}
+
+function renderGroupList() {
+  const list = document.getElementById("groupList");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!myGroups.length) {
+    const empty = document.createElement("div");
+    empty.className = "small-note";
+    empty.textContent = "No groups yet.";
+    list.appendChild(empty);
+    return;
+  }
+
+  myGroups.forEach(group => {
+    const btn = document.createElement("button");
+    btn.className = "nav-btn";
+    btn.style.padding = "10px";
+    btn.textContent = "👥 " + group.name;
+    btn.onclick = () => switchRoom("group", group);
+    list.appendChild(btn);
+  });
+}
+
+async function openCreateGroupPrompt() {
+  const name = prompt("Group name?");
+  if (!name || !name.trim()) return;
+
+  const membersRaw = prompt("Add users (comma separated). Example: alice, bob, charlie") || "";
+  const members = normalizeUserList(membersRaw);
+
+  try {
+    const res = await fetch(GROUPS_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user: username,
+        name: name.trim(),
+        members
+      })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      alert("Failed to create group: " + text);
+      return;
+    }
+
+    const data = await res.json();
+    await fetchGroups();
+
+    if (data.group) {
+      switchRoom("group", data.group);
+    } else {
+      switchRoom("main");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Failed to create group.");
+  }
+}
+
+async function loadMainChat(loadToken) {
+  const res = await fetch(CHAT_API + "?user=" + encodeURIComponent(username));
+  if (loadToken !== activeLoadToken) return null;
+  if (!res.ok) throw new Error("Main chat API error: " + res.status);
+  return await res.json();
+}
+
+async function loadGroupChat(loadToken) {
+  const res = await fetch(
+    GROUP_CHAT_API +
+    "?user=" + encodeURIComponent(username) +
+    "&groupId=" + encodeURIComponent(currentRoom.id)
+  );
+
+  if (loadToken !== activeLoadToken) return null;
+  if (!res.ok) throw new Error("Group chat API error: " + res.status);
+  return await res.json();
+}
+
+async function loadAllMessages(loadToken) {
+  const res = await fetch(ALL_MESSAGES_API + "?user=" + encodeURIComponent(username));
+  if (loadToken !== activeLoadToken) return null;
+  if (!res.ok) throw new Error("All messages API error: " + res.status);
+  const data = await res.json();
+  return Array.isArray(data.messages) ? data.messages : [];
+}
+
 async function load() {
   const loadToken = ++activeLoadToken;
 
-  let res;
+  let data;
 
   try {
-    res = await fetch(CHAT_API + "?user=" + encodeURIComponent(username));
+    if (currentRoom.type === "main") {
+      data = await loadMainChat(loadToken);
+    } else if (currentRoom.type === "group") {
+      data = await loadGroupChat(loadToken);
+    } else if (currentRoom.type === "all") {
+      data = await loadAllMessages(loadToken);
+    } else {
+      data = [];
+    }
   } catch (err) {
     console.error("Fetch failed:", err);
     return;
   }
 
-  if (loadToken !== activeLoadToken) return;
-
-  if (!res.ok) {
-    console.error("Chat API error:", res.status);
-    return;
-  }
-
-  let data;
-  try {
-    data = await res.json();
-  } catch (err) {
-    console.error("Invalid JSON:", err);
-    return;
-  }
-
-  if (loadToken !== activeLoadToken) return;
+  if (loadToken !== activeLoadToken || !data) return;
 
   if (
     notifyEnabled &&
     document.hidden &&
+    Array.isArray(data) &&
     data.length > lastMessageCount
   ) {
     new Audio("notify.mp3").play();
   }
 
-  lastMessageCount = data.length;
+  lastMessageCount = Array.isArray(data) ? data.length : 0;
 
   const newSignature = JSON.stringify(data);
 
@@ -657,12 +832,18 @@ async function load() {
   }
 
   lastDataSignature = newSignature;
-  currentChatData = data;
+  currentChatData = Array.isArray(data) ? data : [];
   await renderChat(loadToken);
 }
 
 function togglePrivateMenu(e) {
   if (e) e.stopPropagation();
+
+  if (currentRoom.type === "all") {
+    alert('Private sending is disabled in "all Messages" view.');
+    return;
+  }
+
   const menu = document.getElementById("privateMenu");
   menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
@@ -671,9 +852,13 @@ function renderUserMenu() {
   const menu = document.getElementById("privateMenu");
   menu.innerHTML = "";
 
+  if (currentRoom.type === "all") {
+    return;
+  }
+
   users.forEach(u => {
     if (u === username) return;
-    if (!passesChatTypeFilter(u)) return;
+    if (currentRoom.type === "main" && !passesChatTypeFilter(u)) return;
 
     const div = document.createElement("div");
     div.className = "user-option";
@@ -765,16 +950,16 @@ function checkSpamAndApplyBlock(text) {
   state.history = state.history.filter(entry => now - entry.time <= SPAM_RULES.historyMaxAgeMs);
 
   const recentQuickMessages = state.history.filter(
-    entry => now - entry.time <= SPAM_RULES.quickMessageWindowMs
+    entry => now - entry.time <= SPAM_RULES.quickBurstWindowMs
   );
 
   const recentLongMessages = state.history.filter(
     entry =>
       entry.length >= SPAM_RULES.longMessageLength &&
-      now - entry.time <= SPAM_RULES.longMessageWindowMs
+      now - entry.time <= SPAM_RULES.longBurstWindowMs
   );
 
-  const duplicateHuge = state.history.find(
+  const recentHugeDuplicates = state.history.filter(
     entry =>
       entry.length >= SPAM_RULES.hugeMessageLength &&
       length >= SPAM_RULES.hugeMessageLength &&
@@ -785,15 +970,21 @@ function checkSpamAndApplyBlock(text) {
   let shouldBlock = false;
   let reason = "";
 
-  if (recentQuickMessages.length >= 1) {
+  if (recentQuickMessages.length >= SPAM_RULES.quickBurstCount - 1) {
     shouldBlock = true;
-    reason = "Blocked for spam: you sent 2 messages too quickly.";
-  } else if (length >= SPAM_RULES.longMessageLength && recentLongMessages.length >= 1) {
+    reason = "Blocked for spam: too many messages in a short burst.";
+  } else if (
+    length >= SPAM_RULES.longMessageLength &&
+    recentLongMessages.length >= SPAM_RULES.longBurstCount - 1
+  ) {
     shouldBlock = true;
-    reason = "Blocked for spam: you sent 2 very long messages too quickly.";
-  } else if (duplicateHuge) {
+    reason = "Blocked for spam: too many extremely long messages too quickly.";
+  } else if (
+    length >= SPAM_RULES.hugeMessageLength &&
+    recentHugeDuplicates.length >= SPAM_RULES.duplicateHugeCount - 1
+  ) {
     shouldBlock = true;
-    reason = "Blocked for spam: you sent the same huge message twice too quickly.";
+    reason = "Blocked for spam: same huge message repeated too many times.";
   }
 
   if (shouldBlock) {
@@ -812,11 +1003,47 @@ function checkSpamAndApplyBlock(text) {
   return { blocked: false };
 }
 
+async function postMainMessage(text) {
+  const res = await fetch(CHAT_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user: username,
+      text
+    })
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+}
+
+async function postGroupMessage(text) {
+  const res = await fetch(GROUP_CHAT_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user: username,
+      groupId: currentRoom.id,
+      text
+    })
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+}
+
 async function send(textOverride = null) {
   const input = document.getElementById("msg");
   const text = textOverride || input.value;
 
   if (!text || !text.trim()) return;
+
+  if (currentRoom.type === "all") {
+    alert('You cannot send messages while viewing "all Messages".');
+    return;
+  }
 
   const spamCheck = checkSpamAndApplyBlock(text);
 
@@ -825,17 +1052,19 @@ async function send(textOverride = null) {
     return;
   }
 
-  await fetch(CHAT_API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      user: username,
-      text: text
-    })
-  });
+  try {
+    if (currentRoom.type === "group") {
+      await postGroupMessage(text);
+    } else {
+      await postMainMessage(text);
+    }
 
-  input.value = "";
-  load();
+    input.value = "";
+    load();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to send message: " + err.message);
+  }
 }
 
 document.getElementById("msg").addEventListener("keypress", e => {
@@ -870,7 +1099,13 @@ document.addEventListener("click", (e) => {
   }
 });
 
-updateChatTypeUI();
-fetchPlanStatus();
-setInterval(load, 2000);
-load();
+async function boot() {
+  updateChatTypeUI();
+  fetchPlanStatus();
+  await fetchGroups();
+  await load();
+  setInterval(load, 2000);
+  setInterval(fetchGroups, 8000);
+}
+
+boot();
