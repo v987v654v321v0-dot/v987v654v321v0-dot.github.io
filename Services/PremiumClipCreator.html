@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Creator</title>
+  <style>
+    body { font-family: Arial; background: #111; color: white; }
+    #canvas {
+      width: 640px;
+      height: 360px;
+      background: black;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid white;
+    }
+    .element {
+      position: absolute;
+      pointer-events: none;
+    }
+    #controls { margin-top: 10px; }
+    input, select, button { margin: 5px; }
+  </style>
+</head>
+<body>
+
+<h2>🎬 Video Creator</h2>
+
+<div id="canvas"></div>
+
+<div id="controls">
+  <button onclick="play()">▶ Play</button>
+  <button onclick="stop()">⏹ Stop</button>
+  <button onclick="exportJSON()">💾 Export JSON</button>
+</div>
+
+<h3>Add Text</h3>
+<input id="textContent" placeholder="Text">
+<input id="textX" type="number" placeholder="X">
+<input id="textY" type="number" placeholder="Y">
+<input id="textStart" type="number" placeholder="Start Time">
+<input id="textEnd" type="number" placeholder="End Time">
+<button onclick="addText()">Add Text</button>
+
+<h3>Add Image</h3>
+<select id="imageSelect"></select>
+<input id="imgStart" type="number" placeholder="Start Time">
+<input id="imgEnd" type="number" placeholder="End Time">
+<input id="imgX" type="number" placeholder="Start X">
+<input id="imgY" type="number" placeholder="Start Y">
+<input id="imgX2" type="number" placeholder="End X">
+<input id="imgY2" type="number" placeholder="End Y">
+<select id="interp">
+  <option value="linear">Linear</option>
+</select>
+<button onclick="addImage()">Add Image</button>
+
+<script src="script.js"></script>
+</body>
+</html>
