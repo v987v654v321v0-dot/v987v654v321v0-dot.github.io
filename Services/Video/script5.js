@@ -79,8 +79,7 @@ function refreshRuler() {
 }
 
 function ensureTimeInBounds() {
-  const length = getVideoLength();
-  time = clamp(time, 0, length);
+  time = clamp(time, 0, getVideoLength());
 }
 
 function addText() {
@@ -119,15 +118,13 @@ function drawTimeline() {
 
   const videoLength = getVideoLength();
 
-  timeline.forEach((obj, index) => {
+  timeline.forEach((obj) => {
     const row = document.createElement("div");
     row.className = "track-row";
     row.style.width = `${videoLength * SCALE + 40}px`;
 
     const clip = document.createElement("div");
     clip.className = `clip ${obj.type}-clip`;
-    clip.style.left = `${obj.start * SCALE}px`;
-    clip.style.width = `${Math.max((obj.end - obj.start) * SCALE, 30)}px`;
 
     const label = document.createElement("div");
     label.className = "clip-label";
@@ -136,22 +133,61 @@ function drawTimeline() {
     const handle = document.createElement("div");
     handle.className = "resize-handle";
 
-    handle.onmousedown = (e) => {
-      e.stopPropagation();
+    function updateClipVisual() {
+      clip.style.left = `${obj.start * SCALE}px`;
+      clip.style.width = `${Math.max((obj.end - obj.start) * SCALE, 30)}px`;
+    }
 
-      const startX = e.clientX;
-      const startWidth = clip.offsetWidth;
+    updateClipVisual();
+
+    let draggingClip = false;
+    let resizingClip = false;
+
+    clip.onmousedown = (e) => {
+      if (e.target === handle) return;
+
+      draggingClip = true;
+      const startMouseX = e.clientX;
+      const originalStart = obj.start;
+      const duration = obj.end - obj.start;
 
       document.onmousemove = (moveEvent) => {
-        const dx = moveEvent.clientX - startX;
-        const newWidth = Math.max(30, startWidth + dx);
-        const newEnd = obj.start + (newWidth / SCALE);
+        if (!draggingClip) return;
 
-        obj.end = clamp(newEnd, obj.start + 0.2, videoLength);
-        clip.style.width = `${(obj.end - obj.start) * SCALE}px`;
+        const dx = moveEvent.clientX - startMouseX;
+        const newStart = clamp(originalStart + dx / SCALE, 0, videoLength - duration);
+
+        obj.start = newStart;
+        obj.end = newStart + duration;
+        updateClipVisual();
       };
 
       document.onmouseup = () => {
+        draggingClip = false;
+        document.onmousemove = null;
+        document.onmouseup = null;
+      };
+    };
+
+    handle.onmousedown = (e) => {
+      e.stopPropagation();
+      resizingClip = true;
+
+      const startMouseX = e.clientX;
+      const originalEnd = obj.end;
+
+      document.onmousemove = (moveEvent) => {
+        if (!resizingClip) return;
+
+        const dx = moveEvent.clientX - startMouseX;
+        const newEnd = clamp(originalEnd + dx / SCALE, obj.start + 0.2, videoLength);
+
+        obj.end = newEnd;
+        updateClipVisual();
+      };
+
+      document.onmouseup = () => {
+        resizingClip = false;
         document.onmousemove = null;
         document.onmouseup = null;
       };
@@ -171,18 +207,45 @@ function makeDraggable(el, obj) {
   let offsetY = 0;
 
   el.onmousedown = (e) => {
+    if (e.target.classList.contains("resize-corner")) return;
+
     e.preventDefault();
     offsetX = e.offsetX;
     offsetY = e.offsetY;
 
     document.onmousemove = (moveEvent) => {
       const rect = canvas.getBoundingClientRect();
+      const elWidth = el.offsetWidth;
+      const elHeight = el.offsetHeight;
 
-      obj.x = clamp(moveEvent.clientX - rect.left - offsetX, 0, rect.width - 20);
-      obj.y = clamp(moveEvent.clientY - rect.top - offsetY, 0, rect.height - 20);
+      obj.x = clamp(moveEvent.clientX - rect.left - offsetX, 0, rect.width - elWidth);
+      obj.y = clamp(moveEvent.clientY - rect.top - offsetY, 0, rect.height - elHeight);
 
       el.style.left = `${obj.x}px`;
       el.style.top = `${obj.y}px`;
+    };
+
+    document.onmouseup = () => {
+      document.onmousemove = null;
+      document.onmouseup = null;
+    };
+  };
+}
+
+function makeImageResizable(wrapper, obj) {
+  const handle = wrapper.querySelector(".resize-corner");
+
+  handle.onmousedown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const startX = e.clientX;
+    const startWidth = obj.width || wrapper.offsetWidth;
+
+    document.onmousemove = (moveEvent) => {
+      const dx = moveEvent.clientX - startX;
+      obj.width = clamp(startWidth + dx, 40, 900);
+      wrapper.style.width = `${obj.width}px`;
     };
 
     document.onmouseup = () => {
@@ -197,29 +260,40 @@ function render() {
 
   timeline.forEach((obj) => {
     if (time >= obj.start && time <= obj.end) {
-      let el;
-
       if (obj.type === "text") {
-        el = document.createElement("div");
+        const el = document.createElement("div");
         el.className = "element text-element";
         el.textContent = obj.content;
+        el.style.left = `${obj.x}px`;
+        el.style.top = `${obj.y}px`;
+
+        makeDraggable(el, obj);
+        canvas.appendChild(el);
       }
 
       if (obj.type === "image") {
-        el = document.createElement("img");
-        el.className = "element";
-        el.src = BASE_PATH + obj.src;
-        el.style.width = `${obj.width || 180}px`;
-        el.draggable = false;
+        const wrapper = document.createElement("div");
+        wrapper.className = "image-wrapper element";
+        wrapper.style.left = `${obj.x}px`;
+        wrapper.style.top = `${obj.y}px`;
+        wrapper.style.width = `${obj.width || 180}px`;
+
+        const img = document.createElement("img");
+        img.src = BASE_PATH + obj.src;
+        img.style.width = "100%";
+        img.draggable = false;
+
+        const resizeCorner = document.createElement("div");
+        resizeCorner.className = "resize-corner";
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(resizeCorner);
+
+        makeDraggable(wrapper, obj);
+        makeImageResizable(wrapper, obj);
+
+        canvas.appendChild(wrapper);
       }
-
-      if (!el) return;
-
-      el.style.left = `${obj.x}px`;
-      el.style.top = `${obj.y}px`;
-
-      makeDraggable(el, obj);
-      canvas.appendChild(el);
     }
   });
 }
@@ -233,8 +307,7 @@ function updateUI() {
 function play() {
   if (playing) return;
 
-  const videoLength = getVideoLength();
-  if (time >= videoLength) {
+  if (time >= getVideoLength()) {
     time = 0;
   }
 
@@ -245,10 +318,12 @@ function play() {
 
 function stop() {
   playing = false;
+
   if (animationId) {
     cancelAnimationFrame(animationId);
     animationId = null;
   }
+
   lastFrameTime = null;
 }
 
