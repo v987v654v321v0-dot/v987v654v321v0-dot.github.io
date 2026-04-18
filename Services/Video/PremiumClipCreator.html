@@ -2,41 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Video Creator</title>
+<title>Video Editor</title>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
   background: #0f0f0f;
-  color: #fff;
+  color: white;
+  font-family: Arial;
 }
 
 /* Layout */
-.container {
+.preview {
+  height: 60vh;
   display: flex;
-  height: 100vh;
-}
-
-/* Left panel */
-.sidebar {
-  width: 300px;
-  background: #1a1a1a;
-  padding: 15px;
-  overflow-y: auto;
-  border-right: 1px solid #333;
-}
-
-/* Right panel */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
-/* Canvas */
 #canvas {
   width: 800px;
   height: 450px;
@@ -44,22 +27,39 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
-}
-
-.element {
-  position: absolute;
-  pointer-events: none;
 }
 
 /* Timeline */
-.timeline {
-  width: 800px;
-  height: 60px;
+.timeline-container {
+  height: 40vh;
   background: #181818;
-  margin-top: 10px;
-  border-radius: 8px;
+  padding: 10px;
+}
+
+.timeline {
   position: relative;
+  height: 120px;
+  background: #222;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.clip {
+  position: absolute;
+  height: 40px;
+  background: #4CAF50;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 12px;
+}
+
+/* Playhead */
+.playhead {
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background: red;
+  left: 0;
 }
 
 /* Controls */
@@ -67,19 +67,13 @@ body {
   margin-top: 10px;
 }
 
-/* Inputs */
-input, select, button {
-  width: 100%;
-  margin-top: 5px;
-  padding: 8px;
-  border: none;
-  border-radius: 6px;
-  background: #2a2a2a;
-  color: white;
-}
-
 button {
+  padding: 8px;
+  margin: 5px;
   background: #4CAF50;
+  border: none;
+  color: white;
+  border-radius: 5px;
   cursor: pointer;
 }
 
@@ -87,57 +81,29 @@ button:hover {
   background: #66d36c;
 }
 
-h3 {
-  margin-top: 20px;
-  border-bottom: 1px solid #333;
-  padding-bottom: 5px;
+.element {
+  position: absolute;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="preview">
+  <div id="canvas"></div>
+</div>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>🎬 Editor</h2>
+<div class="timeline-container">
+  <div class="timeline" id="timeline">
+    <div class="playhead" id="playhead"></div>
+  </div>
 
+  <div class="controls">
     <button onclick="play()">▶ Play</button>
     <button onclick="stop()">⏹ Stop</button>
-    <button onclick="exportJSON()">💾 Export JSON</button>
-
-    <h3>Add Text</h3>
-    <input id="textContent" placeholder="Text">
-    <input id="textX" type="number" placeholder="X">
-    <input id="textY" type="number" placeholder="Y">
-    <input id="textStart" type="number" placeholder="Start Time">
-    <input id="textEnd" type="number" placeholder="End Time">
-    <button onclick="addText()">Add Text</button>
-
-    <h3>Add Image</h3>
-    <select id="imageSelect"></select>
-    <input id="imgStart" type="number" placeholder="Start Time">
-    <input id="imgEnd" type="number" placeholder="End Time">
-    <input id="imgX" type="number" placeholder="Start X">
-    <input id="imgY" type="number" placeholder="Start Y">
-    <input id="imgX2" type="number" placeholder="End X">
-    <input id="imgY2" type="number" placeholder="End Y">
-    <button onclick="addImage()">Add Image</button>
-
+    <button onclick="addDemo()">➕ Add Demo Clip</button>
+    <span>Time: <span id="timeDisplay">0.00</span>s</span>
   </div>
-
-  <!-- Main area -->
-  <div class="main">
-    <div id="canvas"></div>
-
-    <div class="timeline"></div>
-
-    <div class="controls">
-      <span>Time: <span id="timeDisplay">0.00</span>s</span>
-    </div>
-  </div>
-
 </div>
 
 <script src="script2.js"></script>
