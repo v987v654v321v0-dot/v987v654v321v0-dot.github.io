@@ -12,9 +12,9 @@ body {
   font-family: Arial;
 }
 
-/* Layout */
+/* Preview */
 .preview {
-  height: 60vh;
+  height: 50vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -31,7 +31,7 @@ body {
 
 /* Timeline */
 .timeline-container {
-  height: 40vh;
+  height: 50vh;
   background: #181818;
   padding: 10px;
 }
@@ -67,13 +67,17 @@ body {
   margin-top: 10px;
 }
 
-button {
-  padding: 8px;
+input, select, button {
   margin: 5px;
-  background: #4CAF50;
-  border: none;
-  color: white;
+  padding: 6px;
   border-radius: 5px;
+  border: none;
+  background: #2a2a2a;
+  color: white;
+}
+
+button {
+  background: #4CAF50;
   cursor: pointer;
 }
 
@@ -101,11 +105,29 @@ button:hover {
   <div class="controls">
     <button onclick="play()">▶ Play</button>
     <button onclick="stop()">⏹ Stop</button>
-    <button onclick="addDemo()">➕ Add Demo Clip</button>
-    <span>Time: <span id="timeDisplay">0.00</span>s</span>
+
+    Video Length:
+    <input id="videoLength" type="number" value="10">
+
+    <br>
+
+    <!-- TEXT -->
+    <input id="textContent" placeholder="Text">
+    <input id="textStart" type="number" placeholder="Start">
+    <input id="textEnd" type="number" placeholder="End">
+    <button onclick="addText()">Add Text</button>
+
+    <!-- IMAGE -->
+    <select id="imageSelect"></select>
+    <input id="imgStart" type="number" placeholder="Start">
+    <input id="imgEnd" type="number" placeholder="End">
+    <button onclick="addImage()">Add Image</button>
+
+    <br>
+    Time: <span id="timeDisplay">0.00</span>s
   </div>
 </div>
 
-<script src="script3.js"></script>
+<script src="script4.js"></script>
 </body>
 </html>
