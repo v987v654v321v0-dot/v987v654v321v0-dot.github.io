@@ -82,6 +82,7 @@ let currentChatData = [];
 let activeLoadToken = 0;
 let hasUltraPlan = false;
 let myGroups = [];
+let onlineUsers = [];
 let currentRoom = { type: "main", id: null, name: "Main Chat" };
 
 let chatType = localStorage.getItem("chatType") || "1";
@@ -697,6 +698,56 @@ function renderGroupList() {
   });
 }
 
+function renderOnlineUsers() {
+  const list = document.getElementById("onlineUsersList");
+  const count = document.getElementById("onlineUsersCount");
+
+  if (!list || !count) return;
+
+  count.textContent = `Online (${onlineUsers.length})`;
+  list.innerHTML = "";
+
+  if (!onlineUsers.length) {
+    const empty = document.createElement("div");
+    empty.className = "small-note";
+    empty.textContent = "No one online.";
+    list.appendChild(empty);
+    return;
+  }
+
+  onlineUsers.forEach(user => {
+    const div = document.createElement("div");
+    div.className = "user-option";
+    div.textContent = user === username ? `${user} (you)` : user;
+    list.appendChild(div);
+  });
+}
+
+function isActuallyOnlineOnTab() {
+  return document.visibilityState === "visible" && document.hasFocus();
+}
+
+async function updateOnlineUsers() {
+  try {
+    const res = await fetch(ONLINE_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user: username,
+        active: isActuallyOnlineOnTab()
+      })
+    });
+
+    if (!res.ok) throw new Error("Failed online update");
+
+    const data = await res.json();
+    onlineUsers = Array.isArray(data.onlineUsers) ? data.onlineUsers : [];
+    renderOnlineUsers();
+  } catch (err) {
+    console.error("Failed to update online users:", err);
+  }
+}
+
 async function openCreateGroupPrompt() {
   const name = prompt("Group name?");
   if (!name || !name.trim()) return;
@@ -988,8 +1039,12 @@ async function send(textOverride = null) {
     return;
   }
 
+  const isCommand = text.trim().startsWith("/");
+
   try {
-    if (currentRoom.type === "group") {
+    if (isCommand) {
+      await postMainMessage(text);
+    } else if (currentRoom.type === "group") {
       await postGroupMessage(text);
     } else {
       await postMainMessage(text);
@@ -1010,6 +1065,10 @@ function attachStaticListeners() {
       if (e.key === "Enter") send();
     });
   }
+
+  window.addEventListener("focus", updateOnlineUsers);
+  window.addEventListener("blur", updateOnlineUsers);
+  document.addEventListener("visibilitychange", updateOnlineUsers);
 
   document.addEventListener("click", e => {
     const popup = document.getElementById("userProfilePopup");
@@ -1050,8 +1109,11 @@ async function boot() {
   await fetchPlanStatus();
   await fetchGroups();
   await load();
+  await updateOnlineUsers();
+
   setInterval(load, 2000);
   setInterval(fetchGroups, 8000);
+  setInterval(updateOnlineUsers, 5000);
 }
 
 /* make inline HTML onclick handlers work everywhere */
@@ -1068,8 +1130,6 @@ window.sendEmoji = sendEmoji;
 window.togglePrivateMenu = togglePrivateMenu;
 window.switchRoom = switchRoom;
 window.openCreateGroupPrompt = openCreateGroupPrompt;
-
-
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", boot);
