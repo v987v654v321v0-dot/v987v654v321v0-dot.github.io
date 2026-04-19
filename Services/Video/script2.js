@@ -31,8 +31,9 @@ let selectedId = null;
 let playing = false;
 let animationId = null;
 let time = 0;
-let importedVideo = { name: "", url: "" };
+let importedVideo = { name: "", url: "", file: null };
 
+const WORKER_BASE_URL = "https://connectionvideo.v987v654v321v0.workers.dev";
 const SCALE = 80;
 const BASE_PATH = "../../../";
 const overlayNodes = new Map();
@@ -180,7 +181,11 @@ function importVideoFile(file) {
   }
 
   const url = URL.createObjectURL(file);
-  importedVideo = { name: file.name, url };
+  importedVideo = {
+    name: file.name,
+    url,
+    file
+  };
 
   backgroundVideo.src = url;
   backgroundVideo.load();
@@ -486,7 +491,7 @@ function makeImageResizable(wrapper, obj) {
       rafId = null;
     }
 
-    document.removeEventListener("pointermove", onPointerMove); 
+    document.removeEventListener("pointermove", onPointerMove);
     document.removeEventListener("pointerup", stopResize);
   }
 
@@ -553,8 +558,13 @@ function updateOverlayNode(obj) {
   setSelectedVisual(el, obj.id === selectedId);
 
   if (obj.type === "text") {
-    el.textContent = obj.content;
-    createRotateUI(el);
+    const textNode = el.childNodes[0];
+    if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+      textNode.textContent = obj.content;
+    } else {
+      el.textContent = obj.content;
+      createRotateUI(el);
+    }
   }
 
   if (obj.type === "image") {
@@ -724,12 +734,16 @@ function deleteSelectedObject() {
   updateOverlayVisibility();
 }
 
-function exportJSON() {
-  const project = {
+function getProjectData() {
+  return {
     videoLength: getVideoLength(),
     importedVideoName: importedVideo.name,
     timeline
   };
+}
+
+function exportJSON() {
+  const project = getProjectData();
 
   const json = JSON.stringify(project, null, 2);
   const blob = new Blob([json], { type: "application/json" });
@@ -775,6 +789,117 @@ function importJSONProject(file) {
   reader.readAsText(file);
 }
 
+async function publishProject() {
+  const username = localStorage.getItem("username");
+
+  if (!username) {
+    alert("No username found in localStorage.");
+    return;
+  }
+
+  const project = getProjectData();
+  const form = new FormData();
+
+  form.append("username", username);
+  form.append("project", JSON.stringify(project));
+
+  if (importedVideo.file) {
+    form.append("video", importedVideo.file);
+  }
+
+  try {
+    publishBtn.disabled = true;
+    publishBtn.textContent = "Publishing...";
+
+    const response = await fetch(`${WORKER_BASE_URL}/publish`, {
+      method: "POST",
+      body: form
+    });
+
+    const text = await response.text();
+    let result = null;
+
+    try {
+      result = text ? JSON.parse(text) : null;
+    } catch {
+      result = text;
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        typeof result === "object" && result?.error
+          ? result.error
+          : `Publish failed: ${response.status}`
+      );
+    }
+
+    console.log("Publish result:", result);
+    alert("Project published successfully.");
+  } catch (error) {
+    console.error(error);
+    alert(`Failed to publish project: ${error.message}`);
+  } finally {
+    publishBtn.disabled = false;
+    publishBtn.textContent = "Publish";
+  }
+}
+
+async function loadPublishedProject() {
+  const username = localStorage.getItem("username");
+  if (!username) return;
+
+  try {
+    const projectRes = await fetch(
+      `${WORKER_BASE_URL}/project?username=${encodeURIComponent(username)}`
+    );
+
+    if (projectRes.ok) {
+      const saved = await projectRes.json();
+
+      if (saved.project?.videoLength) {
+        videoLengthInput.value = saved.project.videoLength;
+      }
+
+      if (Array.isArray(saved.project?.timeline)) {
+        timeline = saved.project.timeline.map((item) => ({
+          id: item.id || uid(),
+          rotation: 0,
+          ...item
+        }));
+      }
+
+      refreshRuler();
+      selectedId = null;
+      syncSelectedPanel();
+      updateOverlayVisibility();
+
+      const videoRes = await fetch(
+        `${WORKER_BASE_URL}/video?username=${encodeURIComponent(username)}`
+      );
+
+      if (videoRes.ok) {
+        const videoBlob = await videoRes.blob();
+
+        if (importedVideo.url) {
+          URL.revokeObjectURL(importedVideo.url);
+        }
+
+        const videoUrl = URL.createObjectURL(videoBlob);
+        importedVideo = {
+          name: saved.videoName || "loaded-video",
+          url: videoUrl,
+          file: null
+        };
+
+        backgroundVideo.src = videoUrl;
+        backgroundVideo.load();
+      }
+    }
+  } catch (err) {
+    console.warn("Could not auto-load published project:", err);
+  }
+}
+
 canvas.addEventListener("pointerdown", (e) => {
   if (e.target === canvas || e.target === backgroundVideo || e.target === overlayLayer) {
     clearSelected();
@@ -807,49 +932,6 @@ backgroundVideo.addEventListener("timeupdate", () => {
   }
 });
 
-function getProjectData() {
-  return {
-    videoLength: getVideoLength(),
-    importedVideoName: importedVideo.name,
-    timeline
-  };
-}
-
-async function publishProject() {
-  const username = localStorage.getItem("username");
-
-  if (!username) {
-    alert("No username found in localStorage.");
-    return;
-  }
-
-  const project = getProjectData();
-
-  try {
-    const response = await fetch("https://connectionvideo.v987v654v321v0.workers.dev/publish", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username,
-        project
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Publish failed: ${response.status}`);
-    }
-
-    const result = await response.json().catch(() => null);
-    alert("Project published successfully.");
-    console.log("Publish result:", result);
-  } catch (error) {
-    console.error(error);
-    alert("Failed to publish project.");
-  }
-}
-
 addTextBtn.addEventListener("click", addText);
 addImageBtn.addEventListener("click", addImage);
 playBtn.addEventListener("click", play);
@@ -858,8 +940,10 @@ rewindBtn.addEventListener("click", rewindToStart);
 exportJsonBtn.addEventListener("click", exportJSON);
 updateSelectedBtn.addEventListener("click", updateSelectedObject);
 deleteSelectedBtn.addEventListener("click", deleteSelectedObject);
+publishBtn.addEventListener("click", publishProject);
 
 refreshRuler();
 updateOverlayVisibility();
 syncSelectedPanel();
 updateUI();
+loadPublishedProject();
