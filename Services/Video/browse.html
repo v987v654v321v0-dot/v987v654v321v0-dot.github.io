@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Videos</title>
+  <link rel="stylesheet" href="browse.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">Browse Videos</div>
+      <div class="small">Load one published video by username</div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="panel">
+          <h3>Load Published Video</h3>
+
+          <label for="usernameInput">Username</label>
+          <input id="usernameInput" type="text" placeholder="Enter username" />
+
+          <button id="loadBtn" type="button">Load</button>
+        </div>
+
+        <div class="panel">
+          <h3>Info</h3>
+          <div class="info-row"><span>User:</span> <strong id="infoUser">—</strong></div>
+          <div class="info-row"><span>Video:</span> <strong id="infoVideo">—</strong></div>
+          <div class="info-row"><span>Length:</span> <strong id="infoLength">—</strong></div>
+          <div class="info-row"><span>Overlay count:</span> <strong id="infoOverlays">0</strong></div>
+        </div>
+
+        <div class="panel">
+          <h3>Overlay List</h3>
+          <div id="overlayList" class="overlay-list"></div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="video-shell">
+          <div id="canvas">
+            <video id="videoPlayer" controls playsinline></video>
+            <div id="overlayLayer"></div>
+          </div>
+        </div>
+
+        <div class="statusbar">
+          <span>Status: <strong id="statusText">Idle</strong></span>
+          <span>Time: <strong id="timeText">0.00</strong>s</span>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="browse.js"></script>
+</body>
+</html>
