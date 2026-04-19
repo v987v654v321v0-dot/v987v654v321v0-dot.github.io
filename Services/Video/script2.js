@@ -486,7 +486,7 @@ function makeImageResizable(wrapper, obj) {
       rafId = null;
     }
 
-    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointermove", onPointerMove); 
     document.removeEventListener("pointerup", stopResize);
   }
 
