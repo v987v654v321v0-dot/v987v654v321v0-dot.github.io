@@ -1,4 +1,5 @@
 const canvas = document.getElementById("canvas");
+const overlayLayer = document.getElementById("overlayLayer");
 const backgroundVideo = document.getElementById("backgroundVideo");
 const timelineDiv = document.getElementById("timeline");
 const playhead = document.getElementById("playhead");
@@ -25,20 +26,15 @@ const updateSelectedBtn = document.getElementById("updateSelectedBtn");
 const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
 
 let timeline = [];
-let time = 0;
+let selectedId = null;
 let playing = false;
 let animationId = null;
-let lastFrameTime = null;
-let selectedId = null;
-let isInteracting = false;
-
-let importedVideo = {
-  name: "",
-  url: ""
-};
+let time = 0;
+let importedVideo = { name: "", url: "" };
 
 const SCALE = 80;
 const BASE_PATH = "../../../";
+const overlayNodes = new Map();
 
 const images = [
   "cat.jpg",
@@ -87,15 +83,15 @@ function getSelectedObject() {
 function setSelected(id) {
   selectedId = id;
   syncSelectedPanel();
+  updateOverlayVisibility();
   drawTimeline();
-  render();
 }
 
 function clearSelected() {
   selectedId = null;
   syncSelectedPanel();
+  updateOverlayVisibility();
   drawTimeline();
-  render();
 }
 
 function syncSelectedPanel() {
@@ -113,10 +109,6 @@ function syncSelectedPanel() {
   selectedText.value = obj.type === "text" ? obj.content : "";
   selectedRotation.value = String(Math.round(obj.rotation ?? 0));
   selectedWidth.value = obj.type === "image" ? String(Math.round(obj.width ?? 180)) : "";
-}
-
-function ensureTimeInBounds() {
-  time = clamp(time, 0, getVideoLength());
 }
 
 function refreshRuler() {
@@ -155,7 +147,9 @@ function addText() {
   };
 
   timeline.push(obj);
+  createOverlayNode(obj);
   setSelected(obj.id);
+  updateOverlayVisibility();
 }
 
 function addImage() {
@@ -172,7 +166,9 @@ function addImage() {
   };
 
   timeline.push(obj);
+  createOverlayNode(obj);
   setSelected(obj.id);
+  updateOverlayVisibility();
 }
 
 function importVideoFile(file) {
@@ -183,10 +179,7 @@ function importVideoFile(file) {
   }
 
   const url = URL.createObjectURL(file);
-  importedVideo = {
-    name: file.name,
-    url
-  };
+  importedVideo = { name: file.name, url };
 
   backgroundVideo.src = url;
   backgroundVideo.load();
@@ -196,7 +189,8 @@ function importVideoFile(file) {
       videoLengthInput.value = Math.ceil(backgroundVideo.duration);
       refreshRuler();
       drawTimeline();
-      updateUI();
+      syncTimeFromVideo();
+      updateOverlayVisibility();
     }
   };
 }
@@ -232,9 +226,7 @@ function drawTimeline() {
 
     const clip = document.createElement("div");
     clip.className = `clip ${obj.type}-clip`;
-    if (obj.id === selectedId) {
-      clip.classList.add("selected-clip");
-    }
+    if (obj.id === selectedId) clip.classList.add("selected-clip");
 
     const label = document.createElement("div");
     label.className = "clip-label";
@@ -265,8 +257,6 @@ function drawTimeline() {
       const originalStart = obj.start;
       const duration = obj.end - obj.start;
 
-      isInteracting = true;
-
       const onMove = (moveEvent) => {
         const dx = moveEvent.clientX - startMouseX;
         const newStart = clamp(originalStart + dx / SCALE, 0, videoLength - duration);
@@ -274,11 +264,10 @@ function drawTimeline() {
         obj.start = newStart;
         obj.end = newStart + duration;
         updateClipVisual();
-        updateUI();
+        updateOverlayVisibility();
       };
 
       const onUp = () => {
-        isInteracting = false;
         document.removeEventListener("pointermove", onMove);
         document.removeEventListener("pointerup", onUp);
       };
@@ -295,16 +284,14 @@ function drawTimeline() {
       const startMouseX = e.clientX;
       const originalEnd = obj.end;
 
-      isInteracting = true;
-
       const onMove = (moveEvent) => {
         const dx = moveEvent.clientX - startMouseX;
         obj.end = clamp(originalEnd + dx / SCALE, obj.start + 0.2, videoLength);
         updateClipVisual();
+        updateOverlayVisibility();
       };
 
       const onUp = () => {
-        isInteracting = false;
         document.removeEventListener("pointermove", onMove);
         document.removeEventListener("pointerup", onUp);
       };
@@ -322,11 +309,6 @@ function drawTimeline() {
   updateUI();
 }
 
-function applyRotation(el, obj) {
-  el.style.transform = `rotate(${obj.rotation || 0}deg)`;
-  el.style.transformOrigin = "center center";
-}
-
 function createRotateUI(parent) {
   const line = document.createElement("div");
   line.className = "rotate-line";
@@ -336,6 +318,14 @@ function createRotateUI(parent) {
 
   parent.appendChild(line);
   parent.appendChild(handle);
+}
+
+function setElementTransform(el, obj) {
+  el.style.transform = `translate3d(${obj.x}px, ${obj.y}px, 0) rotate(${obj.rotation || 0}deg)`;
+}
+
+function setSelectedVisual(el, isSelected) {
+  el.classList.toggle("selected-outline", isSelected);
 }
 
 function makeSelectable(el, obj) {
@@ -360,14 +350,14 @@ function makeDraggable(el, obj) {
     rafId = null;
 
     const rect = canvas.getBoundingClientRect();
-    const elWidth = el.offsetWidth;
-    const elHeight = el.offsetHeight;
+    const box = el.getBoundingClientRect();
+    const elWidth = box.width;
+    const elHeight = box.height;
 
     obj.x = clamp(pendingX, 0, rect.width - elWidth);
     obj.y = clamp(pendingY, 0, rect.height - elHeight);
 
-    el.style.left = `${obj.x}px`;
-    el.style.top = `${obj.y}px`;
+    setElementTransform(el, obj);
   }
 
   function onPointerMove(e) {
@@ -386,7 +376,6 @@ function makeDraggable(el, obj) {
 
   function stopDragging() {
     dragging = false;
-    isInteracting = false;
 
     if (rafId) {
       cancelAnimationFrame(rafId);
@@ -414,7 +403,6 @@ function makeDraggable(el, obj) {
     setSelected(obj.id);
 
     dragging = true;
-    isInteracting = true;
     activePointerId = e.pointerId;
 
     startPointerX = e.clientX;
@@ -439,7 +427,6 @@ function makeRotatable(el, obj) {
     e.preventDefault();
     e.stopPropagation();
     setSelected(obj.id);
-    isInteracting = true;
 
     const onMove = (moveEvent) => {
       const rect = el.getBoundingClientRect();
@@ -450,12 +437,11 @@ function makeRotatable(el, obj) {
       const angleDegrees = angleRadians * (180 / Math.PI);
 
       obj.rotation = angleDegrees + 90;
-      applyRotation(el, obj);
+      setElementTransform(el, obj);
       syncSelectedPanel();
     };
 
     const onUp = () => {
-      isInteracting = false;
       document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerup", onUp);
     };
@@ -493,7 +479,6 @@ function makeImageResizable(wrapper, obj) {
 
   function stopResize() {
     resizing = false;
-    isInteracting = false;
 
     if (rafId) {
       cancelAnimationFrame(rafId);
@@ -511,7 +496,6 @@ function makeImageResizable(wrapper, obj) {
     setSelected(obj.id);
 
     resizing = true;
-    isInteracting = true;
     startX = e.clientX;
     startWidth = obj.width || wrapper.offsetWidth;
 
@@ -520,94 +504,137 @@ function makeImageResizable(wrapper, obj) {
   });
 }
 
-function render() {
-  canvas.querySelectorAll(".element").forEach((el) => el.remove());
+function createOverlayNode(obj) {
+  if (overlayNodes.has(obj.id)) return overlayNodes.get(obj.id);
+
+  let el;
+
+  if (obj.type === "text") {
+    el = document.createElement("div");
+    el.className = "element text-element";
+    el.textContent = obj.content;
+    createRotateUI(el);
+    makeSelectable(el, obj);
+    makeDraggable(el, obj);
+    makeRotatable(el, obj);
+  } else if (obj.type === "image") {
+    el = document.createElement("div");
+    el.className = "image-wrapper element";
+    el.style.width = `${obj.width || 180}px`;
+
+    const img = document.createElement("img");
+    img.src = BASE_PATH + obj.src;
+    img.draggable = false;
+
+    const resizeCorner = document.createElement("div");
+    resizeCorner.className = "resize-corner";
+
+    el.appendChild(img);
+    el.appendChild(resizeCorner);
+    createRotateUI(el);
+    makeSelectable(el, obj);
+    makeDraggable(el, obj);
+    makeImageResizable(el, obj);
+    makeRotatable(el, obj);
+  }
+
+  overlayLayer.appendChild(el);
+  overlayNodes.set(obj.id, el);
+  updateOverlayNode(obj);
+
+  return el;
+}
+
+function updateOverlayNode(obj) {
+  const el = overlayNodes.get(obj.id);
+  if (!el) return;
+
+  setSelectedVisual(el, obj.id === selectedId);
+
+  if (obj.type === "text") {
+    el.textContent = obj.content;
+    createRotateUI(el);
+  }
+
+  if (obj.type === "image") {
+    const img = el.querySelector("img");
+    if (img) img.src = BASE_PATH + obj.src;
+    el.style.width = `${obj.width || 180}px`;
+  }
+
+  setElementTransform(el, obj);
+}
+
+function rebuildOverlayNode(obj) {
+  const old = overlayNodes.get(obj.id);
+  if (old) {
+    old.remove();
+    overlayNodes.delete(obj.id);
+  }
+  createOverlayNode(obj);
+}
+
+function syncOverlayNodes() {
+  const currentIds = new Set(timeline.map((obj) => obj.id));
+
+  overlayNodes.forEach((node, id) => {
+    if (!currentIds.has(id)) {
+      node.remove();
+      overlayNodes.delete(id);
+    }
+  });
 
   timeline.forEach((obj) => {
-    if (time < obj.start || time > obj.end) return;
-
-    if (obj.type === "text") {
-      const el = document.createElement("div");
-      el.className = "element text-element";
-      if (obj.id === selectedId) {
-        el.classList.add("selected-outline");
-      }
-
-      el.textContent = obj.content;
-      el.style.left = `${obj.x}px`;
-      el.style.top = `${obj.y}px`;
-
-      createRotateUI(el);
-      applyRotation(el, obj);
-      makeSelectable(el, obj);
-      makeDraggable(el, obj);
-      makeRotatable(el, obj);
-
-      canvas.appendChild(el);
-    }
-
-    if (obj.type === "image") {
-      const wrapper = document.createElement("div");
-      wrapper.className = "image-wrapper element";
-      if (obj.id === selectedId) {
-        wrapper.classList.add("selected-outline");
-      }
-
-      wrapper.style.left = `${obj.x}px`;
-      wrapper.style.top = `${obj.y}px`;
-      wrapper.style.width = `${obj.width || 180}px`;
-
-      const img = document.createElement("img");
-      img.src = BASE_PATH + obj.src;
-      img.draggable = false;
-
-      const resizeCorner = document.createElement("div");
-      resizeCorner.className = "resize-corner";
-
-      wrapper.appendChild(img);
-      wrapper.appendChild(resizeCorner);
-      createRotateUI(wrapper);
-
-      applyRotation(wrapper, obj);
-      makeSelectable(wrapper, obj);
-      makeDraggable(wrapper, obj);
-      makeImageResizable(wrapper, obj);
-      makeRotatable(wrapper, obj);
-
-      canvas.appendChild(wrapper);
+    if (!overlayNodes.has(obj.id)) {
+      createOverlayNode(obj);
+    } else {
+      updateOverlayNode(obj);
     }
   });
 }
 
+function updateOverlayVisibility() {
+  syncOverlayNodes();
+
+  timeline.forEach((obj) => {
+    const el = overlayNodes.get(obj.id);
+    if (!el) return;
+
+    const visible = time >= obj.start && time <= obj.end;
+    el.style.display = visible ? "" : "none";
+
+    if (visible) {
+      updateOverlayNode(obj);
+    }
+  });
+
+  drawTimeline();
+  updateUI();
+}
+
+function syncTimeFromVideo() {
+  if (importedVideo.url) {
+    time = backgroundVideo.currentTime || 0;
+  }
+  updateUI();
+}
+
 function updateUI() {
-  ensureTimeInBounds();
+  const maxLength = getVideoLength();
+  time = clamp(time, 0, maxLength);
   timeDisplay.textContent = time.toFixed(2);
   playhead.style.left = `${time * SCALE}px`;
-
-  if (importedVideo.url && backgroundVideo.readyState >= 1) {
-    const maxTime = Number.isFinite(backgroundVideo.duration) ? backgroundVideo.duration : time;
-    const nextTime = Math.min(time, Math.max(0, maxTime));
-    if (Math.abs(backgroundVideo.currentTime - nextTime) > 0.08) {
-      backgroundVideo.currentTime = nextTime;
-    }
-  }
 }
 
 function play() {
   if (playing) return;
 
-  if (time >= getVideoLength()) {
-    time = 0;
-  }
-
-  playing = true;
-  lastFrameTime = null;
-
   if (importedVideo.url) {
-    backgroundVideo.currentTime = time;
+    backgroundVideo.currentTime = clamp(time, 0, backgroundVideo.duration || getVideoLength());
     backgroundVideo.play().catch(() => {});
   }
 
+  playing = true;
   animationId = requestAnimationFrame(loop);
 }
 
@@ -622,45 +649,32 @@ function stop() {
   if (importedVideo.url) {
     backgroundVideo.pause();
   }
-
-  lastFrameTime = null;
 }
 
 function rewindToStart() {
   stop();
   time = 0;
-
   if (importedVideo.url) {
     backgroundVideo.currentTime = 0;
   }
-
-  updateUI();
-  render();
+  updateOverlayVisibility();
 }
 
-function loop(timestamp) {
+function loop() {
   if (!playing) return;
 
-  if (lastFrameTime == null) {
-    lastFrameTime = timestamp;
+  if (importedVideo.url) {
+    time = backgroundVideo.currentTime || 0;
+  } else {
+    time += 1 / 60;
   }
 
-  const deltaSeconds = (timestamp - lastFrameTime) / 1000;
-  lastFrameTime = timestamp;
-
-  time += deltaSeconds;
-
-  const videoLength = getVideoLength();
-  if (time >= videoLength) {
-    time = videoLength;
+  if (time >= getVideoLength()) {
+    time = getVideoLength();
     stop();
   }
 
-  updateUI();
-
-  if (!isInteracting) {
-    render();
-  }
+  updateOverlayVisibility();
 
   if (playing) {
     animationId = requestAnimationFrame(loop);
@@ -678,6 +692,7 @@ function updateSelectedObject() {
 
   if (obj.type === "text") {
     obj.content = selectedText.value || "New Text";
+    rebuildOverlayNode(obj);
   }
 
   if (obj.type === "image") {
@@ -685,11 +700,11 @@ function updateSelectedObject() {
     if (Number.isFinite(widthValue) && widthValue > 0) {
       obj.width = widthValue;
     }
+    updateOverlayNode(obj);
   }
 
   syncSelectedPanel();
-  drawTimeline();
-  render();
+  updateOverlayVisibility();
 }
 
 function deleteSelectedObject() {
@@ -697,7 +712,15 @@ function deleteSelectedObject() {
   if (!obj) return;
 
   timeline = timeline.filter((item) => item.id !== obj.id);
+
+  const node = overlayNodes.get(obj.id);
+  if (node) {
+    node.remove();
+    overlayNodes.delete(obj.id);
+  }
+
   clearSelected();
+  updateOverlayVisibility();
 }
 
 function exportJSON() {
@@ -731,20 +754,18 @@ function importJSONProject(file) {
         videoLengthInput.value = data.videoLength;
       }
 
-      if (Array.isArray(data.timeline)) {
-        timeline = data.timeline.map((item) => ({
-          id: item.id || uid(),
-          rotation: 0,
-          ...item
-        }));
-      } else {
-        timeline = [];
-      }
+      timeline = Array.isArray(data.timeline)
+        ? data.timeline.map((item) => ({
+            id: item.id || uid(),
+            rotation: 0,
+            ...item
+          }))
+        : [];
 
-      clearSelected();
+      selectedId = null;
+      syncSelectedPanel();
       refreshRuler();
-      drawTimeline();
-      render();
+      updateOverlayVisibility();
     } catch (err) {
       alert("Invalid JSON project file.");
     }
@@ -754,7 +775,7 @@ function importJSONProject(file) {
 }
 
 canvas.addEventListener("pointerdown", (e) => {
-  if (e.target === canvas || e.target === backgroundVideo) {
+  if (e.target === canvas || e.target === backgroundVideo || e.target === overlayLayer) {
     clearSelected();
   }
 });
@@ -767,8 +788,7 @@ timelineDiv.addEventListener("click", (e) => {
 
 videoLengthInput.addEventListener("input", () => {
   refreshRuler();
-  drawTimeline();
-  updateUI();
+  updateOverlayVisibility();
 });
 
 videoImport.addEventListener("change", (e) => {
@@ -779,18 +799,23 @@ importJson.addEventListener("change", (e) => {
   importJSONProject(e.target.files[0]);
 });
 
+backgroundVideo.addEventListener("timeupdate", () => {
+  if (playing) {
+    syncTimeFromVideo();
+    updateOverlayVisibility();
+  }
+});
+
 addTextBtn.addEventListener("click", addText);
 addImageBtn.addEventListener("click", addImage);
 playBtn.addEventListener("click", play);
 stopBtn.addEventListener("click", stop);
 rewindBtn.addEventListener("click", rewindToStart);
 exportJsonBtn.addEventListener("click", exportJSON);
-
 updateSelectedBtn.addEventListener("click", updateSelectedObject);
 deleteSelectedBtn.addEventListener("click", deleteSelectedObject);
 
 refreshRuler();
-drawTimeline();
-render();
+updateOverlayVisibility();
 syncSelectedPanel();
 updateUI();
