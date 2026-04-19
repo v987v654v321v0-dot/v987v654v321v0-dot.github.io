@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Video Creator</title>
-  <link rel="stylesheet" href="style3.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
     <div class="topbar">
       <div class="title">Video Creator</div>
       <div class="small">
-        Select elements • Edit/delete them • Import a video • Drag clips to change start time
+        Smoother player • Persistent overlays • Video-clock synced playback
       </div>
     </div>
 
@@ -27,7 +27,7 @@
           <input id="videoImport" type="file" accept="video/*" />
 
           <div class="hint">
-            Imported video becomes the background video in the preview.
+            Imported video becomes the background video.
           </div>
         </div>
 
@@ -72,10 +72,6 @@
             <button id="updateSelectedBtn" type="button">Update</button>
             <button id="deleteSelectedBtn" type="button" class="danger">Delete</button>
           </div>
-
-          <div class="hint">
-            Text uses content + rotation. Images use width + rotation.
-          </div>
         </div>
 
         <div class="panel">
@@ -92,6 +88,7 @@
           <div class="preview-shell">
             <div id="canvas">
               <video id="backgroundVideo" playsinline muted></video>
+              <div id="overlayLayer"></div>
             </div>
           </div>
         </div>
@@ -120,6 +117,6 @@
     </div>
   </div>
 
-  <script src="script9.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
