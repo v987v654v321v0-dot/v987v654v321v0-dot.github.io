@@ -91,7 +91,8 @@ function addText() {
     start: 0,
     end: 3,
     x: 120,
-    y: 100
+    y: 100,
+    rotation: 0
   });
 
   drawTimeline();
@@ -106,7 +107,8 @@ function addImage() {
     end: 3,
     x: 160,
     y: 140,
-    width: 180
+    width: 180,
+    rotation: 0
   });
 
   drawTimeline();
@@ -202,12 +204,18 @@ function drawTimeline() {
   updateUI();
 }
 
+function applyRotation(el, obj) {
+  el.style.transform = `rotate(${obj.rotation || 0}deg)`;
+  el.style.transformOrigin = "center center";
+}
+
 function makeDraggable(el, obj) {
   let offsetX = 0;
   let offsetY = 0;
 
   el.onmousedown = (e) => {
     if (e.target.classList.contains("resize-corner")) return;
+    if (e.target.classList.contains("rotate-handle")) return;
 
     e.preventDefault();
     offsetX = e.offsetX;
@@ -223,6 +231,33 @@ function makeDraggable(el, obj) {
 
       el.style.left = `${obj.x}px`;
       el.style.top = `${obj.y}px`;
+    };
+
+    document.onmouseup = () => {
+      document.onmousemove = null;
+      document.onmouseup = null;
+    };
+  };
+}
+
+function makeRotatable(el, obj) {
+  const handle = el.querySelector(".rotate-handle");
+  if (!handle) return;
+
+  handle.onmousedown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    document.onmousemove = (moveEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      const angleRadians = Math.atan2(moveEvent.clientY - cy, moveEvent.clientX - cx);
+      const angleDegrees = angleRadians * (180 / Math.PI);
+
+      obj.rotation = angleDegrees + 90;
+      applyRotation(el, obj);
     };
 
     document.onmouseup = () => {
@@ -255,6 +290,17 @@ function makeImageResizable(wrapper, obj) {
   };
 }
 
+function createRotateUI(parent) {
+  const line = document.createElement("div");
+  line.className = "rotate-line";
+
+  const handle = document.createElement("div");
+  handle.className = "rotate-handle";
+
+  parent.appendChild(line);
+  parent.appendChild(handle);
+}
+
 function render() {
   canvas.innerHTML = "";
 
@@ -266,8 +312,13 @@ function render() {
         el.textContent = obj.content;
         el.style.left = `${obj.x}px`;
         el.style.top = `${obj.y}px`;
+        el.style.position = "absolute";
 
+        createRotateUI(el);
+        applyRotation(el, obj);
         makeDraggable(el, obj);
+        makeRotatable(el, obj);
+
         canvas.appendChild(el);
       }
 
@@ -288,9 +339,12 @@ function render() {
 
         wrapper.appendChild(img);
         wrapper.appendChild(resizeCorner);
+        createRotateUI(wrapper);
 
+        applyRotation(wrapper, obj);
         makeDraggable(wrapper, obj);
         makeImageResizable(wrapper, obj);
+        makeRotatable(wrapper, obj);
 
         canvas.appendChild(wrapper);
       }
