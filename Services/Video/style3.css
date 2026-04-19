@@ -30,10 +30,6 @@ body {
   overflow: hidden;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 button,
 input,
 select,
@@ -225,10 +221,19 @@ code {
   pointer-events: none;
 }
 
+#overlayLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
 .element {
   position: absolute;
   z-index: 2;
   user-select: none;
+  pointer-events: auto;
+  transform-origin: center center;
 }
 
 .text-element {
@@ -257,7 +262,7 @@ code {
 .image-wrapper,
 .text-element {
   touch-action: none;
-  will-change: transform, left, top;
+  will-change: transform;
 }
 
 .selected-outline {
