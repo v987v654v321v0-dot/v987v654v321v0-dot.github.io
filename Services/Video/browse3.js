@@ -3,6 +3,10 @@ const WORKER_BASE_URL = "https://connectionvideo.v987v654v321v0.workers.dev";
 const usernameInput = document.getElementById("usernameInput");
 const loadBtn = document.getElementById("loadBtn");
 
+const manualPlayBtn = document.getElementById("manualPlayBtn");
+const manualPauseBtn = document.getElementById("manualPauseBtn");
+const manualResetBtn = document.getElementById("manualResetBtn");
+
 const infoUser = document.getElementById("infoUser");
 const infoVideo = document.getElementById("infoVideo");
 const infoLength = document.getElementById("infoLength");
@@ -22,6 +26,7 @@ let manualTime = 0;
 let manualAnimationId = null;
 let lastManualTimestamp = null;
 let usingRealVideo = false;
+let currentVideoObjectUrl = null;
 
 function setStatus(text) {
   statusText.textContent = text;
@@ -43,6 +48,8 @@ function clearInfo() {
   currentProject = null;
   stopManualPlayback();
   usingRealVideo = false;
+  manualTime = 0;
+  timeText.textContent = "0.00";
 }
 
 function buildOverlayList(timeline) {
@@ -115,9 +122,7 @@ function buildOverlayDom(timeline) {
 
   timeline.forEach((item) => {
     const el = createOverlayNode(item);
-    if (el) {
-      item._dom = el;
-    }
+    if (el) item._dom = el;
   });
 }
 
@@ -135,7 +140,6 @@ function updateOverlayVisibilityAtTime(t) {
     const visible = t >= start && t <= end;
 
     el.style.display = visible ? "" : "none";
-
     if (!visible) return;
 
     const x = Number(item.x ?? 0);
@@ -165,6 +169,30 @@ function stopManualPlayback() {
   }
 }
 
+function startManualPlayback() {
+  if (!currentProject || usingRealVideo) return;
+  if (manualPlaying) return;
+
+  manualPlaying = true;
+  lastManualTimestamp = null;
+  setStatus("Playing (manual)");
+  manualAnimationId = requestAnimationFrame(manualLoop);
+}
+
+function pauseManualPlayback() {
+  if (usingRealVideo) return;
+  stopManualPlayback();
+  setStatus("Paused (manual)");
+}
+
+function resetManualPlayback() {
+  if (usingRealVideo) return;
+  stopManualPlayback();
+  manualTime = 0;
+  updateOverlayVisibilityAtTime(0);
+  setStatus("Reset (manual)");
+}
+
 function manualLoop(timestamp) {
   if (!manualPlaying || !currentProject) return;
 
@@ -180,29 +208,32 @@ function manualLoop(timestamp) {
   const maxLen = Number(currentProject.videoLength) || 10;
   if (manualTime >= maxLen) {
     manualTime = maxLen;
+    updateOverlayVisibilityAtTime(manualTime);
     stopManualPlayback();
     setStatus("Ended (manual)");
+    return;
   }
 
   updateOverlayVisibilityAtTime(manualTime);
-
-  if (manualPlaying) {
-    manualAnimationId = requestAnimationFrame(manualLoop);
-  }
+  manualAnimationId = requestAnimationFrame(manualLoop);
 }
 
 async function tryLoadRealVideo(username) {
   const videoUrl = `${WORKER_BASE_URL}/video?username=${encodeURIComponent(username)}`;
 
   try {
-    const res = await fetch(videoUrl, { method: "GET" });
+    const res = await fetch(videoUrl);
     if (!res.ok) return false;
 
     const blob = await res.blob();
     if (!blob || blob.size === 0) return false;
 
-    const objectUrl = URL.createObjectURL(blob);
-    videoPlayer.src = objectUrl;
+    if (currentVideoObjectUrl) {
+      URL.revokeObjectURL(currentVideoObjectUrl);
+    }
+
+    currentVideoObjectUrl = URL.createObjectURL(blob);
+    videoPlayer.src = currentVideoObjectUrl;
     videoPlayer.style.display = "";
     usingRealVideo = true;
     return true;
@@ -262,6 +293,7 @@ async function loadPublishedVideoByUsername(username) {
       setStatus("Loaded real video");
     } else {
       usingRealVideo = false;
+      videoPlayer.pause();
       videoPlayer.removeAttribute("src");
       videoPlayer.load();
       videoPlayer.style.display = "none";
@@ -286,6 +318,33 @@ usernameInput.addEventListener("keydown", (e) => {
   }
 });
 
+manualPlayBtn.addEventListener("click", () => {
+  if (usingRealVideo) {
+    videoPlayer.play().catch(() => {});
+  } else {
+    startManualPlayback();
+  }
+});
+
+manualPauseBtn.addEventListener("click", () => {
+  if (usingRealVideo) {
+    videoPlayer.pause();
+  } else {
+    pauseManualPlayback();
+  }
+});
+
+manualResetBtn.addEventListener("click", () => {
+  if (usingRealVideo) {
+    videoPlayer.pause();
+    videoPlayer.currentTime = 0;
+    updateOverlayVisibility();
+    setStatus("Reset");
+  } else {
+    resetManualPlayback();
+  }
+});
+
 videoPlayer.addEventListener("timeupdate", () => {
   if (usingRealVideo) updateOverlayVisibility();
 });
@@ -306,40 +365,6 @@ videoPlayer.addEventListener("ended", () => {
 });
 videoPlayer.addEventListener("error", () => {
   if (usingRealVideo) setStatus("Video error");
-});
-
-document.addEventListener("keydown", (e) => {
-  if (!currentProject) return;
-
-  if (e.code === "Space") {
-    e.preventDefault();
-
-    if (usingRealVideo) {
-      if (videoPlayer.paused) {
-        videoPlayer.play().catch(() => {});
-      } else {
-        videoPlayer.pause();
-      }
-      return;
-    }
-
-    if (manualPlaying) {
-      stopManualPlayback();
-      setStatus("Paused (manual)");
-    } else {
-      manualPlaying = true;
-      lastManualTimestamp = null;
-      setStatus("Playing (manual)");
-      manualAnimationId = requestAnimationFrame(manualLoop);
-    }
-  }
-
-  if (e.key.toLowerCase() === "r" && !usingRealVideo) {
-    manualTime = 0;
-    stopManualPlayback();
-    updateOverlayVisibilityAtTime(0);
-    setStatus("Reset (manual)");
-  }
 });
 
 clearInfo();
