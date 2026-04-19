@@ -1,78 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Verify</title>
-
-  <!-- Google Fonts -->
-  
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Playfair+Display&family=Montserrat&family=Courier+Prime&family=Pacifico&display=swap" rel="stylesheet">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HH</title>
   <style>
-    body {
-      background: #111;
-      color: #eee;
-      font-family: Arial, sans-serif;
-      padding: 40px;
+    * {
+      box-sizing: border-box;
     }
 
-    
-    .text3 { font-family: 'Montserrat', sans-serif; font-size: 22px; }
-    .
+    :root {
+      --bg: #ffffff;
+      --text: #202124;
+      --muted: #5f6368;
+      --border: #e0e3e7;
+      --card: #f8f9fa;
+      --blue: #1a73e8;
+      --blue-hover: #1765cc;
+    }
 
-    .buttons {
-      margin-top: 40px;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .nav {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--border);
+      background: white;
+      position: sticky;
+      top: 0;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
     }
 
     .btn {
-      border: none;
-      cursor: pointer;
-      border-radius: 8px;
-      margin: 10px;
-      color: white;
-    }
-
-    .btn-small {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 999px;
       font-size: 14px;
-      padding: 8px 14px;
-      background: #3498db;
+      cursor: pointer;
     }
 
-    .btn-medium {
-      font-size: 18px;
-      padding: 12px 20px;
-      background: #2ecc71;
+    .btn.primary {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
     }
 
-    .btn-large {
+    .btn.primary:hover {
+      background: var(--blue-hover);
+    }
+
+    .hero {
+      max-width: 980px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 72px 20px 36px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(42px, 7vw, 78px);
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -2px;
+    }
+
+    .hero p {
+      margin: 20px auto 0;
+      max-width: 720px;
+      font-size: 20px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .section {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    .section h2 {
+      margin: 0 0 20px;
+      font-size: 30px;
+      letter-spacing: -0.8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: white;
+      border: 1px solid var(--border);
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
       font-size: 22px;
-      padding: 16px 30px;
-      background: #e74c3c;
+      letter-spacing: -0.5px;
     }
 
-    .btn-xl {
-      font-size: 26px;
-      padding: 20px 40px;
-      background: #9b59b6;
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .card button {
+      margin-top: 18px;
+      align-self: flex-start;
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      font-size: 14px;
+    }
+
+    .footer {
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+      padding: 22px 20px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        padding: 0 16px;
+      }
+
+      .hero {
+        padding-top: 48px;
+      }
     }
   </style>
 </head>
 <body>
+  <header class="nav">
+    <div class="logo">HH</div>
+    <div class="nav-right">
+      <a href="#">Products</a>
+      <a href="#">Research</a>
+      <a href="#">About</a>
+      <button class="btn">Sign in</button>
+      <button class="btn primary">Get started</button>
+    </div>
+  </header>
 
-  <h1>Text Examples</h1>
+  <section class="hero">
+    <h1>Build with tools that feel simple.</h1>
+    <p>
+      HH makes fast, useful products for creation, search, media, and intelligent workflows. We offer games, and so much more!
+    </p>
+    <div class="hero-actions">
+      <button class="btn primary">Explore products</button>
+      <button class="btn">See what’s new</button>
+    </div>
+  </section>
 
-  
-  <p class="text3">Hello! Welcome to our site! Still under devlopment.</p>
-  
+  <section class="section">
+    <h2>Products</h2>
+    <div class="grid">
+      <div class="card">
+        <div>
+          <div class="icon">💬</div>
+          <h3>Premium Chat</h3>
+          <p>Find answers, pages, and media faster with a cleaner look.</p>
+        </div>
+        <button onclick="window.location.href='https://v987v654v321v0-dot.github.io/PremiumChat'">Open PremiumChat</button>
+      </div>
 
-  <div class="buttons">
-    <h2>Button Examples</h2>
+      <div class="card">
+        <div>
+          <div class="icon">🎬</div>
+          <h3>Video Watcher</h3>
+          <p>Create, edit, publish, and browse video content in one connected platform.</p>
+        </div>
+        <button onclick="window.location.href='https://v987v654v321v0-dot.github.io/Services/Video/browse'">Open Video Watcher</button>
+      </div>
 
-    <button class="btn btn-small">Small Button</button>
-    <button class="btn btn-medium">Medium Button</button>
-    <button class="btn btn-large">Large Button</button>
-    <button class="btn btn-xl">Extra Large Button</button>
-  </div>
+      <div class="card">
+        <div>
+          <div class="icon">🎥</div>
+          <h3>Video Creator</h3>
+          <p>Store projects, sync data, and keep your work available wherever you need it.</p>
+        </div>
+        <button onclick="window.location.href='https://v987v654v321v0-dot.github.io/Services/Video/PremiumClipCreator.html'">Open Creator</button>
+      </div>
 
+      <div class="card">
+        <div>
+          <div class="icon">📰</div>
+          <h3>News</h3>
+          <p>Browse the news and get updated on classroom events.</p>
+        </div>
+        <button onclick="window.location.href='https://v987v654v321v0-dot.github.io/news/newsacessscodeequal9810.html'">Open News</button>
+      </div>
+
+      <div class="card">
+        <div>
+          <div class="icon">⚙️</div>
+          <h3>Settings</h3>
+          <p>Modify your account and configure properties.</p>
+        </div>
+        <button onclick="window.location.href='https://v987v654v321v0-dot.github.io/news/account.html'">Open Settings</button>
+      </div>
+
+      <div class="card">
+        <div>
+          <div class="icon">🖥️</div>
+          <h3>Login & Signup</h3>
+          <p>Create a new account or log in.</p>
+        </div>
+        <button onclick="window.location.href='https://v987v654v321v0-dot.github.io/news/main'">Open Login & Signup</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    HH
+  </footer>
 </body>
 </html>
