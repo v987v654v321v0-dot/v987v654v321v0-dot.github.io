@@ -17,10 +17,11 @@ const overlayLayer = document.getElementById("overlayLayer");
 
 let currentProject = null;
 let overlayNodes = [];
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
+let manualPlaying = false;
+let manualTime = 0;
+let manualAnimationId = null;
+let lastManualTimestamp = null;
+let usingRealVideo = false;
 
 function setStatus(text) {
   statusText.textContent = text;
@@ -40,6 +41,8 @@ function clearInfo() {
   overlayList.innerHTML = "";
   clearOverlayDom();
   currentProject = null;
+  stopManualPlayback();
+  usingRealVideo = false;
 }
 
 function buildOverlayList(timeline) {
@@ -67,9 +70,7 @@ function buildOverlayList(timeline) {
         ${item.start ?? 0}s → ${item.end ?? 0}s
       `;
     } else {
-      div.innerHTML = `
-        <strong>#${index + 1} ${escapeHtml(item.type || "Unknown")}</strong>
-      `;
+      div.innerHTML = `<strong>#${index + 1} ${escapeHtml(item.type || "Unknown")}</strong>`;
     }
 
     overlayList.appendChild(div);
@@ -120,10 +121,9 @@ function buildOverlayDom(timeline) {
   });
 }
 
-function updateOverlayVisibility() {
+function updateOverlayVisibilityAtTime(t) {
   if (!currentProject || !Array.isArray(currentProject.timeline)) return;
 
-  const t = videoPlayer.currentTime || 0;
   timeText.textContent = t.toFixed(2);
 
   currentProject.timeline.forEach((item) => {
@@ -148,6 +148,67 @@ function updateOverlayVisibility() {
 
     el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg)`;
   });
+}
+
+function updateOverlayVisibility() {
+  const t = usingRealVideo ? (videoPlayer.currentTime || 0) : manualTime;
+  updateOverlayVisibilityAtTime(t);
+}
+
+function stopManualPlayback() {
+  manualPlaying = false;
+  lastManualTimestamp = null;
+
+  if (manualAnimationId) {
+    cancelAnimationFrame(manualAnimationId);
+    manualAnimationId = null;
+  }
+}
+
+function manualLoop(timestamp) {
+  if (!manualPlaying || !currentProject) return;
+
+  if (lastManualTimestamp == null) {
+    lastManualTimestamp = timestamp;
+  }
+
+  const dt = (timestamp - lastManualTimestamp) / 1000;
+  lastManualTimestamp = timestamp;
+
+  manualTime += dt;
+
+  const maxLen = Number(currentProject.videoLength) || 10;
+  if (manualTime >= maxLen) {
+    manualTime = maxLen;
+    stopManualPlayback();
+    setStatus("Ended (manual)");
+  }
+
+  updateOverlayVisibilityAtTime(manualTime);
+
+  if (manualPlaying) {
+    manualAnimationId = requestAnimationFrame(manualLoop);
+  }
+}
+
+async function tryLoadRealVideo(username) {
+  const videoUrl = `${WORKER_BASE_URL}/video?username=${encodeURIComponent(username)}`;
+
+  try {
+    const res = await fetch(videoUrl, { method: "GET" });
+    if (!res.ok) return false;
+
+    const blob = await res.blob();
+    if (!blob || blob.size === 0) return false;
+
+    const objectUrl = URL.createObjectURL(blob);
+    videoPlayer.src = objectUrl;
+    videoPlayer.style.display = "";
+    usingRealVideo = true;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function loadPublishedVideoByUsername(username) {
@@ -183,7 +244,7 @@ async function loadPublishedVideoByUsername(username) {
     currentProject = {
       username: projectData.username || username,
       videoName: projectData.videoName || savedProject.importedVideoName || "video",
-      videoLength: savedProject.videoLength || "—",
+      videoLength: Number(savedProject.videoLength || 10),
       timeline
     };
 
@@ -195,11 +256,19 @@ async function loadPublishedVideoByUsername(username) {
     buildOverlayList(timeline);
     buildOverlayDom(timeline);
 
-    const videoUrl = `${WORKER_BASE_URL}/video?username=${encodeURIComponent(username)}`;
-    videoPlayer.src = videoUrl;
-    videoPlayer.load();
+    const hasRealVideo = await tryLoadRealVideo(username);
 
-    setStatus("Loaded");
+    if (hasRealVideo) {
+      setStatus("Loaded real video");
+    } else {
+      usingRealVideo = false;
+      videoPlayer.removeAttribute("src");
+      videoPlayer.load();
+      videoPlayer.style.display = "none";
+      manualTime = 0;
+      updateOverlayVisibilityAtTime(0);
+      setStatus("Loaded JSON-only playback");
+    }
   } catch (error) {
     console.error(error);
     setStatus("Error");
@@ -217,12 +286,61 @@ usernameInput.addEventListener("keydown", (e) => {
   }
 });
 
-videoPlayer.addEventListener("timeupdate", updateOverlayVisibility);
-videoPlayer.addEventListener("seeked", updateOverlayVisibility);
-videoPlayer.addEventListener("loadedmetadata", updateOverlayVisibility);
-videoPlayer.addEventListener("play", () => setStatus("Playing"));
-videoPlayer.addEventListener("pause", () => setStatus("Paused"));
-videoPlayer.addEventListener("ended", () => setStatus("Ended"));
+videoPlayer.addEventListener("timeupdate", () => {
+  if (usingRealVideo) updateOverlayVisibility();
+});
+videoPlayer.addEventListener("seeked", () => {
+  if (usingRealVideo) updateOverlayVisibility();
+});
+videoPlayer.addEventListener("loadedmetadata", () => {
+  if (usingRealVideo) updateOverlayVisibility();
+});
+videoPlayer.addEventListener("play", () => {
+  if (usingRealVideo) setStatus("Playing");
+});
+videoPlayer.addEventListener("pause", () => {
+  if (usingRealVideo) setStatus("Paused");
+});
+videoPlayer.addEventListener("ended", () => {
+  if (usingRealVideo) setStatus("Ended");
+});
+videoPlayer.addEventListener("error", () => {
+  if (usingRealVideo) setStatus("Video error");
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!currentProject) return;
+
+  if (e.code === "Space") {
+    e.preventDefault();
+
+    if (usingRealVideo) {
+      if (videoPlayer.paused) {
+        videoPlayer.play().catch(() => {});
+      } else {
+        videoPlayer.pause();
+      }
+      return;
+    }
+
+    if (manualPlaying) {
+      stopManualPlayback();
+      setStatus("Paused (manual)");
+    } else {
+      manualPlaying = true;
+      lastManualTimestamp = null;
+      setStatus("Playing (manual)");
+      manualAnimationId = requestAnimationFrame(manualLoop);
+    }
+  }
+
+  if (e.key.toLowerCase() === "r" && !usingRealVideo) {
+    manualTime = 0;
+    stopManualPlayback();
+    updateOverlayVisibilityAtTime(0);
+    setStatus("Reset (manual)");
+  }
+});
 
 clearInfo();
 setStatus("Idle");
