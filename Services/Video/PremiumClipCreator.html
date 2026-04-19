@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Video Creator</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style3.css" />
 </head>
 <body>
   <div class="app">
     <div class="topbar">
       <div class="title">Video Creator</div>
       <div class="small">
-        Drag clips to move start time • Resize clip edge for duration • Drag items in preview
+        Select elements • Edit/delete them • Import a video • Drag clips to change start time
       </div>
     </div>
 
@@ -23,8 +23,11 @@
           <label for="videoLength">Video length (seconds)</label>
           <input id="videoLength" type="number" min="1" step="1" value="10" />
 
+          <label for="videoImport">Import video</label>
+          <input id="videoImport" type="file" accept="video/*" />
+
           <div class="hint">
-            Total project length.
+            Imported video becomes the background video in the preview.
           </div>
         </div>
 
@@ -35,10 +38,6 @@
           <input id="textContent" type="text" placeholder="Type text here" />
 
           <button id="addTextBtn" type="button">Add Text</button>
-
-          <div class="hint">
-            Text starts at 0s by default. Drag the clip to move when it begins.
-          </div>
         </div>
 
         <div class="panel">
@@ -55,15 +54,45 @@
         </div>
 
         <div class="panel">
-          <h3>Save</h3>
+          <h3>Selected Element</h3>
+
+          <label for="selectedType">Type</label>
+          <input id="selectedType" type="text" readonly />
+
+          <label for="selectedText">Text content</label>
+          <input id="selectedText" type="text" placeholder="Edit selected text" />
+
+          <label for="selectedRotation">Rotation</label>
+          <input id="selectedRotation" type="number" step="1" placeholder="Degrees" />
+
+          <label for="selectedWidth">Image width</label>
+          <input id="selectedWidth" type="number" step="1" placeholder="Pixels" />
+
+          <div class="btn-row">
+            <button id="updateSelectedBtn" type="button">Update</button>
+            <button id="deleteSelectedBtn" type="button" class="danger">Delete</button>
+          </div>
+
+          <div class="hint">
+            Text uses content + rotation. Images use width + rotation.
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Save / Load</h3>
           <button id="exportJsonBtn" type="button">Export JSON</button>
+
+          <label for="importJson">Import JSON project</label>
+          <input id="importJson" type="file" accept=".json,application/json" />
         </div>
       </aside>
 
       <section class="workspace">
         <div class="preview-wrap">
           <div class="preview-shell">
-            <div id="canvas"></div>
+            <div id="canvas">
+              <video id="backgroundVideo" playsinline muted></video>
+            </div>
           </div>
         </div>
 
@@ -91,6 +120,6 @@
     </div>
   </div>
 
-  <script src="script7.js"></script>
+  <script src="script8.js"></script>
 </body>
 </html>
