@@ -30,6 +30,7 @@ let playing = false;
 let animationId = null;
 let lastFrameTime = null;
 let selectedId = null;
+let isInteracting = false;
 
 let importedVideo = {
   name: "",
@@ -70,31 +71,31 @@ function uid() {
   return "id_" + Math.random().toString(36).slice(2, 10);
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function getVideoLength() {
   const value = Number(videoLengthInput.value);
   return Number.isFinite(value) && value > 0 ? value : 10;
 }
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function getSelectedObject() {
-  return timeline.find(item => item.id === selectedId) || null;
+  return timeline.find((item) => item.id === selectedId) || null;
 }
 
 function setSelected(id) {
   selectedId = id;
   syncSelectedPanel();
-  render();
   drawTimeline();
+  render();
 }
 
 function clearSelected() {
   selectedId = null;
   syncSelectedPanel();
-  render();
   drawTimeline();
+  render();
 }
 
 function syncSelectedPanel() {
@@ -110,8 +111,12 @@ function syncSelectedPanel() {
 
   selectedType.value = obj.type;
   selectedText.value = obj.type === "text" ? obj.content : "";
-  selectedRotation.value = obj.rotation ?? 0;
-  selectedWidth.value = obj.type === "image" ? (obj.width ?? 180) : "";
+  selectedRotation.value = String(Math.round(obj.rotation ?? 0));
+  selectedWidth.value = obj.type === "image" ? String(Math.round(obj.width ?? 180)) : "";
+}
+
+function ensureTimeInBounds() {
+  time = clamp(time, 0, getVideoLength());
 }
 
 function refreshRuler() {
@@ -130,12 +135,9 @@ function refreshRuler() {
     timelineRuler.appendChild(tick);
   }
 
-  timelineRuler.style.width = `${length * SCALE + 40}px`;
-  timelineDiv.style.width = `${length * SCALE + 40}px`;
-}
-
-function ensureTimeInBounds() {
-  time = clamp(time, 0, getVideoLength());
+  const width = length * SCALE + 40;
+  timelineRuler.style.width = `${width}px`;
+  timelineDiv.style.width = `${width}px`;
 }
 
 function addText() {
@@ -248,19 +250,24 @@ function drawTimeline() {
 
     updateClipVisual();
 
-    clip.onclick = (e) => {
+    clip.addEventListener("click", (e) => {
       e.stopPropagation();
       setSelected(obj.id);
-    };
+    });
 
-    clip.onmousedown = (e) => {
+    clip.addEventListener("pointerdown", (e) => {
       if (e.target === handle) return;
+
+      e.stopPropagation();
+      setSelected(obj.id);
 
       const startMouseX = e.clientX;
       const originalStart = obj.start;
       const duration = obj.end - obj.start;
 
-      document.onmousemove = (moveEvent) => {
+      isInteracting = true;
+
+      const onMove = (moveEvent) => {
         const dx = moveEvent.clientX - startMouseX;
         const newStart = clamp(originalStart + dx / SCALE, 0, videoLength - duration);
 
@@ -270,31 +277,41 @@ function drawTimeline() {
         updateUI();
       };
 
-      document.onmouseup = () => {
-        document.onmousemove = null;
-        document.onmouseup = null;
+      const onUp = () => {
+        isInteracting = false;
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
       };
-    };
 
-    handle.onmousedown = (e) => {
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+    });
+
+    handle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
       e.stopPropagation();
+      setSelected(obj.id);
 
       const startMouseX = e.clientX;
       const originalEnd = obj.end;
 
-      document.onmousemove = (moveEvent) => {
-        const dx = moveEvent.clientX - startMouseX;
-        const newEnd = clamp(originalEnd + dx / SCALE, obj.start + 0.2, videoLength);
+      isInteracting = true;
 
-        obj.end = newEnd;
+      const onMove = (moveEvent) => {
+        const dx = moveEvent.clientX - startMouseX;
+        obj.end = clamp(originalEnd + dx / SCALE, obj.start + 0.2, videoLength);
         updateClipVisual();
       };
 
-      document.onmouseup = () => {
-        document.onmousemove = null;
-        document.onmouseup = null;
+      const onUp = () => {
+        isInteracting = false;
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
       };
-    };
+
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+    });
 
     clip.appendChild(label);
     clip.appendChild(handle);
@@ -322,17 +339,72 @@ function createRotateUI(parent) {
 }
 
 function makeSelectable(el, obj) {
-  el.addEventListener("mousedown", (e) => {
+  el.addEventListener("pointerdown", (e) => {
     e.stopPropagation();
     setSelected(obj.id);
   });
 }
 
 function makeDraggable(el, obj) {
-  let offsetX = 0;
-  let offsetY = 0;
+  let startPointerX = 0;
+  let startPointerY = 0;
+  let startObjX = 0;
+  let startObjY = 0;
+  let dragging = false;
+  let rafId = null;
+  let pendingX = 0;
+  let pendingY = 0;
+  let activePointerId = null;
 
-  el.onmousedown = (e) => {
+  function applyPosition() {
+    rafId = null;
+
+    const rect = canvas.getBoundingClientRect();
+    const elWidth = el.offsetWidth;
+    const elHeight = el.offsetHeight;
+
+    obj.x = clamp(pendingX, 0, rect.width - elWidth);
+    obj.y = clamp(pendingY, 0, rect.height - elHeight);
+
+    el.style.left = `${obj.x}px`;
+    el.style.top = `${obj.y}px`;
+  }
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+
+    const dx = e.clientX - startPointerX;
+    const dy = e.clientY - startPointerY;
+
+    pendingX = startObjX + dx;
+    pendingY = startObjY + dy;
+
+    if (!rafId) {
+      rafId = requestAnimationFrame(applyPosition);
+    }
+  }
+
+  function stopDragging() {
+    dragging = false;
+    isInteracting = false;
+
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+
+    if (activePointerId !== null) {
+      try {
+        el.releasePointerCapture(activePointerId);
+      } catch (_) {}
+    }
+
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", stopDragging);
+    activePointerId = null;
+  }
+
+  el.addEventListener("pointerdown", (e) => {
     if (e.target.classList.contains("resize-corner")) return;
     if (e.target.classList.contains("rotate-handle")) return;
 
@@ -341,38 +413,35 @@ function makeDraggable(el, obj) {
 
     setSelected(obj.id);
 
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
+    dragging = true;
+    isInteracting = true;
+    activePointerId = e.pointerId;
 
-    document.onmousemove = (moveEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const elWidth = el.offsetWidth;
-      const elHeight = el.offsetHeight;
+    startPointerX = e.clientX;
+    startPointerY = e.clientY;
+    startObjX = obj.x;
+    startObjY = obj.y;
 
-      obj.x = clamp(moveEvent.clientX - rect.left - offsetX, 0, rect.width - elWidth);
-      obj.y = clamp(moveEvent.clientY - rect.top - offsetY, 0, rect.height - elHeight);
+    try {
+      el.setPointerCapture(e.pointerId);
+    } catch (_) {}
 
-      el.style.left = `${obj.x}px`;
-      el.style.top = `${obj.y}px`;
-    };
-
-    document.onmouseup = () => {
-      document.onmousemove = null;
-      document.onmouseup = null;
-    };
-  };
+    document.addEventListener("pointermove", onPointerMove);
+    document.addEventListener("pointerup", stopDragging);
+  });
 }
 
 function makeRotatable(el, obj) {
   const handle = el.querySelector(".rotate-handle");
   if (!handle) return;
 
-  handle.onmousedown = (e) => {
+  handle.addEventListener("pointerdown", (e) => {
     e.preventDefault();
     e.stopPropagation();
     setSelected(obj.id);
+    isInteracting = true;
 
-    document.onmousemove = (moveEvent) => {
+    const onMove = (moveEvent) => {
       const rect = el.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
@@ -385,93 +454,127 @@ function makeRotatable(el, obj) {
       syncSelectedPanel();
     };
 
-    document.onmouseup = () => {
-      document.onmousemove = null;
-      document.onmouseup = null;
+    const onUp = () => {
+      isInteracting = false;
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
     };
-  };
+
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+  });
 }
 
 function makeImageResizable(wrapper, obj) {
   const handle = wrapper.querySelector(".resize-corner");
+  let resizing = false;
+  let startX = 0;
+  let startWidth = 0;
+  let rafId = null;
+  let pendingWidth = 0;
 
-  handle.onmousedown = (e) => {
+  function applyResize() {
+    rafId = null;
+    obj.width = clamp(pendingWidth, 40, 900);
+    wrapper.style.width = `${obj.width}px`;
+    syncSelectedPanel();
+  }
+
+  function onPointerMove(e) {
+    if (!resizing) return;
+
+    const dx = e.clientX - startX;
+    pendingWidth = startWidth + dx;
+
+    if (!rafId) {
+      rafId = requestAnimationFrame(applyResize);
+    }
+  }
+
+  function stopResize() {
+    resizing = false;
+    isInteracting = false;
+
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", stopResize);
+  }
+
+  handle.addEventListener("pointerdown", (e) => {
     e.preventDefault();
     e.stopPropagation();
+
     setSelected(obj.id);
 
-    const startX = e.clientX;
-    const startWidth = obj.width || wrapper.offsetWidth;
+    resizing = true;
+    isInteracting = true;
+    startX = e.clientX;
+    startWidth = obj.width || wrapper.offsetWidth;
 
-    document.onmousemove = (moveEvent) => {
-      const dx = moveEvent.clientX - startX;
-      obj.width = clamp(startWidth + dx, 40, 900);
-      wrapper.style.width = `${obj.width}px`;
-      syncSelectedPanel();
-    };
-
-    document.onmouseup = () => {
-      document.onmousemove = null;
-      document.onmouseup = null;
-    };
-  };
+    document.addEventListener("pointermove", onPointerMove);
+    document.addEventListener("pointerup", stopResize);
+  });
 }
 
 function render() {
-  canvas.querySelectorAll(".element").forEach(el => el.remove());
+  canvas.querySelectorAll(".element").forEach((el) => el.remove());
 
   timeline.forEach((obj) => {
-    if (time >= obj.start && time <= obj.end) {
-      if (obj.type === "text") {
-        const el = document.createElement("div");
-        el.className = "element text-element";
-        if (obj.id === selectedId) {
-          el.classList.add("selected-outline");
-        }
+    if (time < obj.start || time > obj.end) return;
 
-        el.textContent = obj.content;
-        el.style.left = `${obj.x}px`;
-        el.style.top = `${obj.y}px`;
-
-        createRotateUI(el);
-        applyRotation(el, obj);
-        makeSelectable(el, obj);
-        makeDraggable(el, obj);
-        makeRotatable(el, obj);
-
-        canvas.appendChild(el);
+    if (obj.type === "text") {
+      const el = document.createElement("div");
+      el.className = "element text-element";
+      if (obj.id === selectedId) {
+        el.classList.add("selected-outline");
       }
 
-      if (obj.type === "image") {
-        const wrapper = document.createElement("div");
-        wrapper.className = "image-wrapper element";
-        if (obj.id === selectedId) {
-          wrapper.classList.add("selected-outline");
-        }
+      el.textContent = obj.content;
+      el.style.left = `${obj.x}px`;
+      el.style.top = `${obj.y}px`;
 
-        wrapper.style.left = `${obj.x}px`;
-        wrapper.style.top = `${obj.y}px`;
-        wrapper.style.width = `${obj.width || 180}px`;
+      createRotateUI(el);
+      applyRotation(el, obj);
+      makeSelectable(el, obj);
+      makeDraggable(el, obj);
+      makeRotatable(el, obj);
 
-        const img = document.createElement("img");
-        img.src = BASE_PATH + obj.src;
-        img.draggable = false;
+      canvas.appendChild(el);
+    }
 
-        const resizeCorner = document.createElement("div");
-        resizeCorner.className = "resize-corner";
-
-        wrapper.appendChild(img);
-        wrapper.appendChild(resizeCorner);
-        createRotateUI(wrapper);
-
-        applyRotation(wrapper, obj);
-        makeSelectable(wrapper, obj);
-        makeDraggable(wrapper, obj);
-        makeImageResizable(wrapper, obj);
-        makeRotatable(wrapper, obj);
-
-        canvas.appendChild(wrapper);
+    if (obj.type === "image") {
+      const wrapper = document.createElement("div");
+      wrapper.className = "image-wrapper element";
+      if (obj.id === selectedId) {
+        wrapper.classList.add("selected-outline");
       }
+
+      wrapper.style.left = `${obj.x}px`;
+      wrapper.style.top = `${obj.y}px`;
+      wrapper.style.width = `${obj.width || 180}px`;
+
+      const img = document.createElement("img");
+      img.src = BASE_PATH + obj.src;
+      img.draggable = false;
+
+      const resizeCorner = document.createElement("div");
+      resizeCorner.className = "resize-corner";
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(resizeCorner);
+      createRotateUI(wrapper);
+
+      applyRotation(wrapper, obj);
+      makeSelectable(wrapper, obj);
+      makeDraggable(wrapper, obj);
+      makeImageResizable(wrapper, obj);
+      makeRotatable(wrapper, obj);
+
+      canvas.appendChild(wrapper);
     }
   });
 }
@@ -482,8 +585,10 @@ function updateUI() {
   playhead.style.left = `${time * SCALE}px`;
 
   if (importedVideo.url && backgroundVideo.readyState >= 1) {
-    if (Math.abs(backgroundVideo.currentTime - time) > 0.08) {
-      backgroundVideo.currentTime = Math.min(time, Math.max(0, backgroundVideo.duration || time));
+    const maxTime = Number.isFinite(backgroundVideo.duration) ? backgroundVideo.duration : time;
+    const nextTime = Math.min(time, Math.max(0, maxTime));
+    if (Math.abs(backgroundVideo.currentTime - nextTime) > 0.08) {
+      backgroundVideo.currentTime = nextTime;
     }
   }
 }
@@ -552,7 +657,10 @@ function loop(timestamp) {
   }
 
   updateUI();
-  render();
+
+  if (!isInteracting) {
+    render();
+  }
 
   if (playing) {
     animationId = requestAnimationFrame(loop);
@@ -579,16 +687,16 @@ function updateSelectedObject() {
     }
   }
 
+  syncSelectedPanel();
   drawTimeline();
   render();
-  syncSelectedPanel();
 }
 
 function deleteSelectedObject() {
   const obj = getSelectedObject();
   if (!obj) return;
 
-  timeline = timeline.filter(item => item.id !== obj.id);
+  timeline = timeline.filter((item) => item.id !== obj.id);
   clearSelected();
 }
 
@@ -624,7 +732,7 @@ function importJSONProject(file) {
       }
 
       if (Array.isArray(data.timeline)) {
-        timeline = data.timeline.map(item => ({
+        timeline = data.timeline.map((item) => ({
           id: item.id || uid(),
           rotation: 0,
           ...item
@@ -641,11 +749,18 @@ function importJSONProject(file) {
       alert("Invalid JSON project file.");
     }
   };
+
   reader.readAsText(file);
 }
 
-canvas.addEventListener("mousedown", (e) => {
+canvas.addEventListener("pointerdown", (e) => {
   if (e.target === canvas || e.target === backgroundVideo) {
+    clearSelected();
+  }
+});
+
+timelineDiv.addEventListener("click", (e) => {
+  if (e.target === timelineDiv) {
     clearSelected();
   }
 });
