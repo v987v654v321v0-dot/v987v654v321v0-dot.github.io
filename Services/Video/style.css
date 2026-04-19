@@ -337,6 +337,30 @@ button:hover {
   color: #b8bcc7;
 }
 
+.rotate-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 50%;
+  top: -24px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #ffb020;
+  border: 2px solid white;
+  cursor: grab;
+}
+
+.rotate-line {
+  position: absolute;
+  width: 2px;
+  height: 16px;
+  left: 50%;
+  top: -16px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
 code {
   background: #101116;
   padding: 2px 5px;
