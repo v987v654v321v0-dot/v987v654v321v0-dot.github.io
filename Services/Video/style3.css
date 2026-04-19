@@ -397,6 +397,12 @@ button.danger:hover {
   color: #b8bcc7;
 }
 
+.image-wrapper,
+.text-element {
+  touch-action: none;
+  will-change: transform, left, top;
+}
+
 code {
   background: #101116;
   padding: 2px 5px;
