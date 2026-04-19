@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - HH</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #ffffff;
+      --text: #202124;
+      --muted: #5f6368;
+      --border: #e0e3e7;
+      --card: #f8f9fa;
+      --blue: #1a73e8;
+      --blue-hover: #1765cc;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .nav {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--border);
+      background: white;
+      position: sticky;
+      top: 0;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 18px;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 56px 20px 70px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(38px, 6vw, 64px);
+      line-height: 1.05;
+      letter-spacing: -1.6px;
+    }
+
+    .lead {
+      font-size: 19px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 36px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 22px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 28px;
+      letter-spacing: -0.6px;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 22px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .footer {
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+      padding: 22px 20px;
+      text-align: center;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 11px 16px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .back-btn:hover {
+      background: var(--blue-hover);
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="logo">HH</div>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>About HH</h1>
+    <p class="lead">
+      HH offers simple online services for chat, news, and video.
+    </p>
+
+    <div class="card">
+      <h2>What we offer</h2>
+      <ul>
+        <li>Chat services</li>
+        <li>News services</li>
+        <li>Video services</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Terms of Service</h2>
+      <p>
+        By using HH, you agree to use the services responsibly and lawfully.
+      </p>
+      <p>
+        You may not use HH to harm others, abuse the platform, interfere with service operation,
+        or violate applicable laws.
+      </p>
+      <p>
+        Services may change, be updated, limited, or removed at any time.
+      </p>
+      <p>
+        HH is provided as-is without guarantees of uninterrupted availability, accuracy, or fitness
+        for any particular purpose.
+      </p>
+      <p>
+        By continuing to use HH, you agree to these terms.
+      </p>
+    </div>
+
+    <a class="back-btn" href="index.html">Back to Home</a>
+  </main>
+
+  <footer class="footer">
+    HH
+  </footer>
+</body>
+</html>
