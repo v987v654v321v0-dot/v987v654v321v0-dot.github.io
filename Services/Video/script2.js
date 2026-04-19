@@ -826,7 +826,7 @@ async function publishProject() {
   const project = getProjectData();
 
   try {
-    const response = await fetch("https://connectionvideo.v987v654v321v0.workers.dev/publish", {
+    const response = await fetch("https://connectionvideo.v987v654v321v0.workers.dev/publish/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
