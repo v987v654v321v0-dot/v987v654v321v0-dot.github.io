@@ -6,6 +6,7 @@ const playhead = document.getElementById("playhead");
 const timeDisplay = document.getElementById("timeDisplay");
 const videoLengthInput = document.getElementById("videoLength");
 const timelineRuler = document.getElementById("timelineRuler");
+const publishBtn = document.getElementById("publishBtn");
 
 const addTextBtn = document.getElementById("addTextBtn");
 const addImageBtn = document.getElementById("addImageBtn");
@@ -805,6 +806,49 @@ backgroundVideo.addEventListener("timeupdate", () => {
     updateOverlayVisibility();
   }
 });
+
+function getProjectData() {
+  return {
+    videoLength: getVideoLength(),
+    importedVideoName: importedVideo.name,
+    timeline
+  };
+}
+
+async function publishProject() {
+  const username = localStorage.getItem("username");
+
+  if (!username) {
+    alert("No username found in localStorage.");
+    return;
+  }
+
+  const project = getProjectData();
+
+  try {
+    const response = await fetch("YOUR_API_URL_HERE", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username,
+        project
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publish failed: ${response.status}`);
+    }
+
+    const result = await response.json().catch(() => null);
+    alert("Project published successfully.");
+    console.log("Publish result:", result);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to publish project.");
+  }
+}
 
 addTextBtn.addEventListener("click", addText);
 addImageBtn.addEventListener("click", addImage);
