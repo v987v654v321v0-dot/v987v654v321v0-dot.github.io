@@ -1,4 +1,4 @@
-const WORKER_BASE_URL = "REDACTED";
+const WORKER_BASE_URL = "https://connectionvideo.v987v654v321v0.workers.dev";
 
 const usernameInput = document.getElementById("usernameInput");
 const loadBtn = document.getElementById("loadBtn");
