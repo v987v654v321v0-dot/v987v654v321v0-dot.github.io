@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Private website directory">
+  <title>Website Directory</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- Nothing from the directory is shown before authentication. -->
+  <main id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-card">
+      <div class="lock-icon" aria-hidden="true">●</div>
+
+      <p class="eyebrow">Private access</p>
+      <h1>Website Directory</h1>
+      <p class="login-description">
+        Enter your password to access your saved websites.
+      </p>
+
+      <label for="password">Password</label>
+
+      <div class="password-row">
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          autofocus
+        >
+
+        <button
+          id="showPasswordButton"
+          class="show-password"
+          type="button"
+          aria-label="Show password"
+        >
+          Show
+        </button>
+      </div>
+
+      <button id="loginButton" class="primary full-width" type="submit">
+        Unlock directory
+      </button>
+
+      <p id="loginMessage" class="message" role="alert"></p>
+    </form>
+  </main>
+
+  <div id="app" class="app hidden">
+    <header class="header">
+      <div class="container header-content">
+        <div>
+          <p class="eyebrow">Private collection</p>
+          <h1>Website Directory</h1>
+        </div>
+
+        <div class="header-actions">
+          <button id="editModeButton" class="secondary" type="button">
+            Edit directory
+          </button>
+
+          <button id="logoutButton" class="text-button" type="button">
+            Log out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="container toolbar-content">
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search websites and categories"
+            aria-label="Search directory"
+          >
+        </label>
+
+        <button
+          id="addCategoryButton"
+          class="primary hidden"
+          type="button"
+        >
+          Add category
+        </button>
+      </div>
+    </div>
+
+    <main class="container directory-layout">
+      <nav id="categoryNavigation" class="category-navigation">
+        <p class="navigation-title">Categories</p>
+        <div id="categoryLinks"></div>
+      </nav>
+
+      <section id="directory" class="directory" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <dialog id="categoryDialog">
+    <form id="categoryForm">
+      <header class="dialog-header">
+        <div>
+          <p class="eyebrow">Directory category</p>
+          <h2 id="categoryDialogTitle">Add category</h2>
+        </div>
+
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-dialog
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="dialog-body">
+        <input id="categoryIndex" type="hidden">
+
+        <label for="categoryName">Category name</label>
+        <input
+          id="categoryName"
+          type="text"
+          maxlength="80"
+          placeholder="For example: Math"
+          required
+        >
+
+        <div class="dialog-actions">
+          <button class="secondary" type="button" data-close-dialog>
+            Cancel
+          </button>
+
+          <button class="primary" type="submit">
+            Save category
+          </button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="websiteDialog">
+    <form id="websiteForm">
+      <header class="dialog-header">
+        <div>
+          <p class="eyebrow">Directory website</p>
+          <h2 id="websiteDialogTitle">Add website</h2>
+        </div>
+
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-dialog
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="dialog-body">
+        <input id="websiteCategoryIndex" type="hidden">
+        <input id="websiteIndex" type="hidden">
+
+        <label for="websiteName">Website name</label>
+        <input
+          id="websiteName"
+          type="text"
+          maxlength="100"
+          placeholder="For example: Desmos"
+          required
+        >
+
+        <label for="websiteUrl">Website URL</label>
+        <input
+          id="websiteUrl"
+          type="url"
+          placeholder="https://example.com"
+          required
+        >
+
+        <label for="websiteDescription">Description</label>
+        <input
+          id="websiteDescription"
+          type="text"
+          maxlength="200"
+          placeholder="Optional short description"
+        >
+
+        <div class="dialog-actions">
+          <button class="secondary" type="button" data-close-dialog>
+            Cancel
+          </button>
+
+          <button class="primary" type="submit">
+            Save website
+          </button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="notification" class="notification" role="status"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
