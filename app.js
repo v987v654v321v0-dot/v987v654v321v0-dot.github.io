@@ -1,4 +1,4 @@
-const API_URL = "https://customerworker.v987v654v321v0.workers.dev/";
+const API_URL = "https://customerworker.v987v654v321v0.workers.dev";
 const TOKEN_KEY = "private-directory-session";
 
 const elements = {
